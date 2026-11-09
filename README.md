@@ -2,7 +2,12 @@
 
 选题 1「帮助 Agent 的全 PC 文件管理记忆系统」的期中汇报材料。
 
-本仓库只含汇报材料（幻灯片 / 逐字稿 / 结果位）；系统实现、原始数据与运行记录在项目主仓库，不随本仓库分发。
+本仓库只含汇报材料（幻灯片 / 逐字稿 / 静态演示 / 结果位）；系统实现、原始数据与运行记录在项目主仓库，不随本仓库分发。
+
+**在线预览**（GitHub Pages）：
+
+- 幻灯片：<https://foenwhite.github.io/pcmem-midterm/slides.html>
+- 静态演示：<https://foenwhite.github.io/pcmem-midterm/demo/>
 
 ## 文件
 
@@ -11,6 +16,7 @@
 | `slides.html` | 幻灯片源文件，单文件、无外链、离线可用。← → 翻页，F 全屏，⌘P 导出 |
 | `slides.pdf` | 16:9 导出版，8 页 = 封面 + 5 页正文 + 备查 + 讨论 |
 | `script.md` | 逐字稿，按页分；含时间轴、每页字数、超时先删哪句、Q&A 备答 |
+| `demo/` | 静态预录演示（固定快照、无需后端与 Key）：资料树、版本链、图谱、预录问答 |
 | `reports-for-ref/` | 期中调研的四份独立 HTML；Victoria 浏览器因数据集许可未收录，见该目录 README |
 | `results/` | 对照实验数据；现在为空，只放了填表说明 |
 | `results/kg-rag-comparison.md` | 结果记录模板（待填） |
