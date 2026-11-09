@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>数据集 / benchmark 对照 · A1–A8 覆盖矩阵</title>
+<style>
+  :root{
+    --bg:#f7f7f5; --bg2:#ffffff; --bg3:#f0f0ec;
+    --fg:#1c1c1a; --fg2:#5a5a54; --fg3:#8a8a82;
+    --line:#dedeD6; --line2:#eaeae3;
+    --accent:#2f6f5e; --accent2:#c07a2c;
+    --ok:#2f7d4f; --okbg:#e6f2ea;
+    --part:#a86a12; --partbg:#fbf0dd;
+    --no:#9a3b34; --nobg:#f7e7e5;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(0,0,0,.05),0 8px 24px -12px rgba(0,0,0,.12);
+  }
+  html[data-theme="dark"]{
+    --bg:#141414; --bg2:#1b1b1a; --bg3:#222220;
+    --fg:#e8e8e2; --fg2:#a8a8a0; --fg3:#75756e;
+    --line:#2f2f2c; --line2:#262624;
+    --accent:#6fbfa4; --accent2:#d99a4e;
+    --ok:#6cc08c; --okbg:#1c2b22;
+    --part:#d9a24a; --partbg:#2b2418;
+    --no:#d97d72; --nobg:#2c1e1c;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px -12px rgba(0,0,0,.6);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);
+    font-size:15px;line-height:1.62;-webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:44px 28px 96px}
+  header.top{border-bottom:1px solid var(--line);padding-bottom:26px;margin-bottom:34px}
+  .kicker{font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+  h1{font-size:33px;line-height:1.22;letter-spacing:-.015em;margin:0 0 12px;font-weight:640}
+  .dek{font-size:16px;color:var(--fg2);max-width:74ch;margin:0}
+  .meta{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:20px;font-family:var(--mono);font-size:11.5px;color:var(--fg3)}
+  .meta b{color:var(--fg2);font-weight:500}
+  h2{font-size:21px;letter-spacing:-.01em;margin:56px 0 6px;font-weight:620;display:flex;align-items:baseline;gap:10px}
+  h2 .n{font-family:var(--mono);font-size:12px;color:var(--fg3);font-weight:400}
+  h3{font-size:15.5px;margin:30px 0 10px;font-weight:620;color:var(--fg)}
+  .lede{color:var(--fg2);margin:0 0 18px;max-width:82ch}
+  p{margin:0 0 12px}
+  a{color:var(--accent);text-decoration:none;border-bottom:1px solid color-mix(in srgb,var(--accent) 35%,transparent)}
+  a:hover{border-bottom-color:var(--accent)}
+  code{font-family:var(--mono);font-size:.9em;background:var(--bg3);padding:1px 5px;border-radius:4px}
+
+  .verdict{background:var(--bg2);border:1px solid var(--line);border-left:3px solid var(--accent2);border-radius:8px;padding:20px 24px;margin:22px 0;box-shadow:var(--shadow)}
+  .verdict .vh{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2);margin-bottom:10px}
+  .verdict ul{margin:0;padding-left:18px}
+  .verdict li{margin:6px 0}
+  .verdict strong{font-weight:640}
+
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden;margin:24px 0}
+  .stat{background:var(--bg2);padding:16px 18px}
+  .stat .v{font-size:26px;font-weight:640;letter-spacing:-.02em;line-height:1.1}
+  .stat .v small{font-size:13px;color:var(--fg3);font-weight:400}
+  .stat .l{font-size:11.5px;color:var(--fg3);margin-top:5px;line-height:1.4}
+
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--bg2);box-shadow:var(--shadow)}
+  table{border-collapse:collapse;width:100%;font-size:13.5px}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line2);vertical-align:top}
+  thead th{background:var(--bg3);font-size:11.5px;font-weight:600;letter-spacing:.02em;color:var(--fg2);white-space:nowrap;position:sticky;top:0;z-index:2}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:hover td{background:color-mix(in srgb,var(--accent) 5%,transparent)}
+  td.num{font-family:var(--mono);text-align:right;white-space:nowrap;color:var(--fg2)}
+  .num-id{font-family:var(--mono);font-size:12px;color:var(--fg3);white-space:nowrap}
+
+  /* matrix */
+  .matrix-wrap{overflow:auto;max-height:none;border:1px solid var(--line);border-radius:8px;background:var(--bg2);box-shadow:var(--shadow)}
+  table.matrix{font-size:13px;border-collapse:separate;border-spacing:0;table-layout:fixed;min-width:760px}
+  table.matrix thead th:first-child{width:190px}
+  table.matrix th,table.matrix td{border-bottom:1px solid var(--line2);border-right:1px solid var(--line2)}
+  table.matrix thead th{position:sticky;top:0;z-index:3;background:var(--bg3);text-align:center;padding:9px 5px;white-space:normal;min-width:72px;line-height:1.25;font-size:11px;overflow-wrap:anywhere}
+  table.matrix thead th:first-child{left:0;z-index:4;text-align:left}
+  table.matrix tbody th{position:sticky;left:0;z-index:1;background:var(--bg2);text-align:left;white-space:nowrap;padding:9px 10px;font-weight:500;font-size:12.5px}
+  table.matrix tbody th .aid{font-family:var(--mono);font-size:11px;color:var(--fg3);margin-right:7px;display:inline-block;width:22px}
+  table.matrix tbody td{text-align:center;padding:0;font-size:15px}
+  table.matrix tbody tr:hover th{background:var(--bg3)}
+  .cell{display:block;padding:9px 0;font-weight:600;cursor:default}
+  .cell.ok{color:var(--ok);background:var(--okbg)}
+  .cell.part{color:var(--part);background:var(--partbg)}
+  .cell.no{color:var(--no);background:transparent}
+  .matrix tfoot td,.matrix tfoot th{background:var(--bg3);font-family:var(--mono);font-size:11.5px;color:var(--fg2);padding:8px 10px;border-top:1px solid var(--line)}
+  .matrix tfoot th{text-align:left;position:sticky;left:0;z-index:1;background:var(--bg3)}
+  .dim .cell.no,.dim .cell.part{opacity:.22}
+  .colhl{outline:2px solid color-mix(in srgb,var(--accent) 55%,transparent);outline-offset:-2px}
+  .rowhl th{outline:2px solid color-mix(in srgb,var(--accent) 45%,transparent);outline-offset:-2px}
+
+  .legend{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin:12px 0 0;font-size:12.5px;color:var(--fg2)}
+  .legend .k{display:inline-flex;align-items:center;gap:6px}
+  .sw{width:16px;height:16px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+  .sw.ok{background:var(--okbg);color:var(--ok)}
+  .sw.part{background:var(--partbg);color:var(--part)}
+  .sw.no{background:var(--bg3);color:var(--no)}
+  .tools{display:flex;gap:10px;align-items:center;margin:14px 0 12px;flex-wrap:wrap}
+  .btn{font-family:var(--sans);font-size:12.5px;color:var(--fg2);background:var(--bg2);border:1px solid var(--line);border-radius:6px;padding:5px 11px;cursor:pointer}
+  .btn:hover{border-color:var(--accent);color:var(--fg)}
+  .btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+  html[data-theme="dark"] .btn[aria-pressed="true"]{color:#10201a}
+
+  .cards{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));margin:18px 0}
+  .card{background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:16px 18px;box-shadow:var(--shadow)}
+  .card h4{margin:0 0 3px;font-size:14.5px;font-weight:640;display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+  .card .src{font-family:var(--mono);font-size:11px;color:var(--fg3);margin-bottom:10px}
+  .card dl{margin:0;font-size:13px}
+  .card dt{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--fg3);margin-top:9px}
+  .card dd{margin:1px 0 0;color:var(--fg2)}
+  .pill{font-family:var(--mono);font-size:10.5px;padding:2px 7px;border-radius:99px;border:1px solid var(--line);color:var(--fg2);white-space:nowrap;font-weight:400}
+  .pill.free{border-color:color-mix(in srgb,var(--ok) 45%,var(--line));color:var(--ok)}
+  .pill.restrict{border-color:color-mix(in srgb,var(--part) 45%,var(--line));color:var(--part)}
+  .pill.risk{border-color:color-mix(in srgb,var(--no) 45%,var(--line));color:var(--no)}
+
+  /* depth bars */
+  .tree-grid{display:grid;gap:14px;margin:18px 0}
+  .tree-row{background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:14px 16px;box-shadow:var(--shadow)}
+  .tree-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 12px;margin-bottom:4px}
+  .tree-head .nm{font-weight:620;font-size:14px}
+  .tree-head .sub{font-family:var(--mono);font-size:11px;color:var(--fg3)}
+  .tree-head .depth{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--fg3)}
+  .tree-head .depth b{color:var(--accent2);font-weight:600}
+  .bar{display:flex;height:22px;border-radius:4px;overflow:hidden;margin:9px 0 7px;background:var(--bg3);gap:1px}
+  .bar span{display:block;height:100%;position:relative}
+  .bar span em{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-style:normal;font-family:var(--mono);font-size:10px;color:#fff;opacity:.9}
+  .chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+  .chip{font-family:var(--mono);font-size:10.5px;color:var(--fg2);background:var(--bg3);border-radius:4px;padding:1.5px 6px;white-space:nowrap}
+  .chip i{font-style:normal;color:var(--fg3)}
+  .chip.hot{background:var(--partbg);color:var(--part)}
+  .chip.cold{background:var(--nobg);color:var(--no)}
+
+  pre{background:var(--bg3);border:1px solid var(--line);border-radius:8px;padding:14px 16px;overflow:auto;font-family:var(--mono);font-size:12.5px;line-height:1.65;margin:14px 0}
+  pre .c{color:var(--fg3)}
+  .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;margin:16px 0}
+  .note{font-size:12.5px;color:var(--fg3);border-left:2px solid var(--line);padding-left:12px;margin:16px 0}
+  .callout{background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:14px 18px;margin:18px 0;font-size:13.5px}
+  .callout .t{font-weight:640;margin-bottom:6px}
+  .badge-line{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+  footer{margin-top:64px;padding-top:22px;border-top:1px solid var(--line);font-size:12.5px;color:var(--fg3)}
+  footer p{margin:0 0 8px}
+  .theme-toggle{position:fixed;top:18px;right:18px;z-index:50}
+  @media (max-width:680px){
+    .wrap{padding:28px 16px 70px}
+    h1{font-size:25px}
+    table.matrix thead th{min-width:74px;font-size:10.5px}
+    table.matrix tbody td{width:74px}
+  }
+  @media print{
+    body{background:#fff;color:#000}
+    .theme-toggle,.tools{display:none}
+    .tablewrap,.matrix-wrap,.card,.tree-row{box-shadow:none;break-inside:avoid}
+    h2{break-after:avoid}
+  }
+</style>
+</head>
+<body>
+<button class="btn theme-toggle" id="themeBtn" type="button" title="切换主题">◐</button>
+<div class="wrap">
+
+<header class="top">
+  <div class="kicker">pj01 · 选题 1「全 PC 文件管理记忆系统」· 期中素材</div>
+  <h1>数据集 / benchmark 对照：<br>A1–A8 覆盖矩阵</h1>
+  <p class="dek">2025–2026 年出现的 personal-file、版本敏感、记忆增量类 benchmark 与本课程选题要求逐项对照。核心结论：
+    <strong>没有任何一个现有 benchmark 同时满足 A2 多版本 + A3 项目归属 + A4 文件间引用 + A6 增量更新</strong>，
+    最多只拿到其中 1 项；A4 是 8 个 benchmark 里原生覆盖数为 0 的一项。</p>
+  <div class="meta">
+    <span><b>来源</b> pi session <code>01a1c131</code> · 2026-11-09 17:05 / 17:17 UTC</span>
+    <span><b>条目</b> 覆盖矩阵 §3 · 候选总表 §3.1 · 文件树实测 §3.2</span>
+    <span><b>状态</b> 调研快照，未逐条复核</span>
+  </div>
+</header>
+
+<section>
+  <h2><span class="n">00</span> 结论先行</h2>
+  <div class="verdict">
+    <div class="vh">四条判断</div>
+    <ul>
+      <li><strong>mismatch 不在数据量，而在「任务坐标系」</strong>：现有 eval（MultiHop-RAG + 5 文档 demo + 手写 20 例 personal corpus）测的是「扁平语料 + 单版本 + 无项目结构 + 静态快照」的多跳检索；选题 1 要测的是「异构文件 + 同一材料多版本且无 VCS + 项目跨目录 + 时间线 + 增量更新 + Agent 主动取用」。</li>
+      <li><strong>2026 年已经出现「个人文件系统级」benchmark</strong>（HippoCamp、xAFS、FileGram、Personal Agent Bench），环境保真度这一半有人做了，不必从零造 PC。</li>
+      <li><strong>但「版本链 / 项目归属 / 文件间引用」的标注仍然没有现成数据集</strong>。最接近的只有 VersionQA（版本敏感 QA，34 文档）和 Personal Agent Bench（版本选择 + decoy，合成任务）。这三项必须自己合成或标注 —— 这恰好也是报告里最能讲「KG 补了什么」的部分。</li>
+      <li><strong>建议双轨</strong>：公开 benchmark 做外部可比，自建 personal corpus 做构念效度；不要把两者混成一张表。</li>
+    </ul>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="v" id="stat-max">—</div><div class="l">单列原生 ✓ 最多<br>（满分 8 项）</div></div>
+    <div class="stat"><div class="v">0<small> / 8</small></div><div class="l">A4 文件间引用<br>原生覆盖的 benchmark 数</div></div>
+    <div class="stat"><div class="v">≤1<small> / 4</small></div><div class="l">A2+A3+A4+A6<br>任一列最多个数</div></div>
+    <div class="stat"><div class="v">0<small> 列</small></div><div class="l">同时满足<br>A2∧A3∧A4∧A6</div></div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="n">01</span> 课程要求拆成可测属性</h2>
+  <p class="lede">A1–A8 是后文所有表格的坐标轴。左边是选题原文要点，中间是可测任务，右边是现有 eval 的覆盖情况。</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th style="width:52px">#</th><th>选题原文要点</th><th>可测任务</th><th style="width:34%">现有 eval 是否覆盖</th></tr></thead>
+      <tbody>
+        <tr><td class="num-id">A1</td><td>大量<strong>异构文件</strong>（PDF/PPT/Word/代码/数据/图片/会议记录/下载）</td><td>解析覆盖率、按类型的检索命中</td><td>部分（41 后缀 fixture，但是构造的）</td></tr>
+        <tr><td class="num-id">A2</td><td>同一材料<strong>多个版本</strong>、无版本管理</td><td>版本识别、排序、currentness、变更检测</td><td>❌</td></tr>
+        <tr><td class="num-id">A3</td><td>同一项目<strong>横跨多个文件夹</strong></td><td>项目归属、项目内聚合、跨项目「做过类似的事」</td><td>❌</td></tr>
+        <tr><td class="num-id">A4</td><td>文件间<strong>引用/相似</strong>关系</td><td>mention / reference 抽取、关系查询</td><td>❌（只有接口，没有 gold）</td></tr>
+        <tr><td class="num-id">A5</td><td><strong>时间关系</strong>、过期信息</td><td>时间线浏览、旧版本拒答、superseded 检测</td><td>❌</td></tr>
+        <tr><td class="num-id">A6</td><td>随新文件<strong>持续更新</strong>、长期记忆</td><td>增量摄入、冲突消解、遗忘/删除</td><td>❌</td></tr>
+        <tr><td class="num-id">A7</td><td>Agent 应<strong>主动调用</strong>哪个记忆</td><td>工具/记忆选择、跨会话行为</td><td>❌</td></tr>
+        <tr><td class="num-id">A8</td><td>与普通 LLM/RAG 对比、避免幻觉</td><td>plain / rag / kg 三条件、null 题</td><td>✅（MultiHop-RAG 的 null 题）</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2><span class="n">02</span> 覆盖矩阵</h2>
+  <p class="lede">8 个候选 benchmark × 8 项要求。<strong>✓</strong> 原生覆盖；<strong>◐</strong> 部分/需改写；<strong>✗</strong> 没有。表尾两行是按列统计的「原生 ✓ 数」与「A2+A3+A4+A6 联合命中数」，最后一行是本次调研的核心证据。</p>
+
+  <div class="tools">
+    <button class="btn" id="dimBtn" type="button" aria-pressed="false">淡化 ✗ / ◐</button>
+    <span style="font-size:12.5px;color:var(--fg3)">点击列标题只看该 benchmark · 移开恢复</span>
+  </div>
+
+  <div class="matrix-wrap">
+    <table class="matrix" id="matrix">
+      <thead><tr id="mHead"><th>属性</th></tr></thead>
+      <tbody id="mBody"></tbody>
+      <tfoot id="mFoot"></tfoot>
+    </table>
+  </div>
+  <div class="legend">
+    <span class="k"><span class="sw ok">✓</span> 原生覆盖</span>
+    <span class="k"><span class="sw part">◐</span> 部分 / 需改写</span>
+    <span class="k"><span class="sw no">✗</span> 没有</span>
+    <span class="k" style="color:var(--fg3)">读法：没有任何一列同时满足 A2+A3+A4+A6。</span>
+  </div>
+
+  <div class="callout">
+    <div class="t">「拼起来才等于选题 1」</div>
+    HippoCamp / xAFS 解决<strong>环境</strong>，VersionQA / HoH 解决<strong>版本与过期</strong>，MemoryAgentBench 解决<strong>增量与冲突</strong>，
+    Personal Agent Bench 解决<strong>版本选择 + decoy</strong>。联合标注（版本链 + 项目归属 + 引用边 + 文件生命周期）目前无人做。
+  </div>
+</section>
+
+<section>
+  <h2><span class="n">03</span> 候选数据集（按「离我们多近」分层）</h2>
+  <p class="lede">同一批 benchmark 换一个切面看：每层的定位、规模、覆盖了什么、缺了什么、许可。</p>
+
+  <h3>A · 个人文件系统级环境（最像选题 1 的「PC」）</h3>
+  <div class="cards">
+    <div class="card" id="b-hippocamp">
+      <h4>HippoCamp <span class="pill restrict">Research License v1</span></h4>
+      <div class="src">ECCV 2026 · arXiv 2604.01221 · HF MMem-org/HippoCamp</div>
+      <dl>
+        <dt>规模</dt><dd>3 个画像，2K+ 真实文件，42.4 GB，581 QA；subset 各 137–158 文件</dd>
+        <dt>有什么</dt><dd>真实用户文件聚合、深目录、异构模态（pdf/docx/xlsx/ics/eml/mp3/mkv/png）、文件创建/修改时间、真实存在的附件/版本/近重复；factual retention + profiling 两类任务</dd>
+        <dt>缺什么</dt><dd>没有「哪个是最新版本/属于哪个项目」的专门标注；语料中的版本关系是自然出现而非受控</dd>
+        <dt>许可</dt><dd>仅非商业研究，不可再分发</dd>
+      </dl>
+    </div>
+    <div class="card" id="b-xafs">
+      <h4>xAFS <span class="pill free">CC-BY-4.0</span></h4>
+      <div class="src">supermemory · HF supermemory/xAFS</div>
+      <dl>
+        <dt>规模</dt><dd>13 个合成 persona，5 → 9,988 文件（共 19,169 文件 / 837 MB），110 QA</dd>
+        <dt>有什么</dt><dd>跨上下文个人文件（邮件、Slack、会议记录、实验记录、合同）、<code>gold_file_ids</code>、single-hop / multi-hop / format-spanning；persona 按项目命名（Project Hummingbird / Nova / Nightingale）</dd>
+        <dt>缺什么</dt><dd>纯文本（图片只是 transcription）、无版本链标注、英文</dd>
+        <dt>许可</dt><dd>可改写，需署名</dd>
+      </dl>
+    </div>
+    <div class="card" id="b-filegram">
+      <h4>FileGram <span class="pill free">MIT</span></h4>
+      <div class="src">arXiv 2604.04901 · GitHub synvo-ai/FileGram · HF Choiszt/FileGram</div>
+      <dl>
+        <dt>规模</dt><dd>20 profiles，32 workspace bundles，4,333–4,600+ QA，4 条 track</dd>
+        <dt>有什么</dt><dd>文件系统<strong>行为轨迹</strong>（含 edit chain / diff）、6 个行为维度（消费/生产/组织/迭代/清理/跨模态）、profile reconstruction / trace disentanglement / anomaly detection / multimodal grounding</dd>
+        <dt>缺什么</dt><dd>测的是「用户画像与行为个性化」，不是文件检索/版本记忆；合成</dd>
+      </dl>
+    </div>
+    <div class="card" id="b-pab">
+      <h4>Personal Agent Bench <span class="pill restrict">demo NC-ND</span></h4>
+      <div class="src">EigenData · HF jindidi/eigendata-demo-data</div>
+      <dl>
+        <dt>规模</dt><dd>每任务 ~1,200 文件 + 8 个 app；12 decoy + 14 candidate / 每个目标 artifact；12 任务 demo ≈12.5 GB</dd>
+        <dt>有什么</dt><dd><strong>显式的版本选择语义</strong>：corrected form 优先于 original、排除 wrong-year / incomplete / draft / wrong-recipient、memory↔evidence 冲突、stale address；<code>oracle.json</code> 给出 selected artifacts + 排除理由</dd>
+        <dt>缺什么</dt><dd>任务是「整理 packet / 填表 / 报销」，不是 QA 或 KG 查询；full corpus 需商业授权</dd>
+      </dl>
+    </div>
+  </div>
+  <p class="note">这一层说明：「个人电脑环境」已经可以买到/下到，但它们的标注目标是「完成任务」，不是「理解文件结构」。</p>
+
+  <h3>B · 真实个人语料</h3>
+  <div class="cards">
+    <div class="card" id="b-enron">
+      <h4>Enron / EnronQA <span class="pill risk">隐私争议</span></h4>
+      <div class="src">arXiv 2505.00263 · HF MichaelR207/enron_qa_0922</div>
+      <dl>
+        <dt>规模</dt><dd>Enron 标准版 ~517k 邮件 / 150 用户；EnronQA 103,638 邮件 + 528,304 QA / 150 收件箱</dd>
+        <dt>用途</dt><dd>唯一大规模「真实私有文档 + 个性化 RAG」基准；天然有文件夹、线程、按用户划分</dd>
+        <dt>注意</dt><dd>标准版<strong>不含附件</strong>；真实人物隐私，伦理上不宜作为主打；许可标注不清</dd>
+      </dl>
+    </div>
+  </div>
+
+  <h3>C · 长期记忆 / 增量状态</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>数据集</th><th>规模</th><th>测什么</th><th>对我们的价值</th></tr></thead>
+      <tbody>
+        <tr><td><strong>LongMemEval</strong></td><td>500 题，历史可达 115k tokens</td><td>信息抽取、多会话、时间推理、knowledge updates、abstention</td><td>已有；对话语料，只借「更新/拒答」题型</td></tr>
+        <tr id="b-mab"><td><strong>MemoryAgentBench</strong><br><span class="pill free">MIT</span> <span class="src" style="display:inline">ICLR 2026</span></td><td>HF ai-hyz/MemoryAgentBench</td><td>四能力：AR / TTL / LRU / <strong>Conflict Resolution</strong>；自建 FactConsolidation、EventQA；<strong>增量分块摄入</strong></td><td>最接近「新文件覆盖旧文件后还能答对」的机制测试</td></tr>
+        <tr><td><strong>MemoryArena</strong></td><td>766 subtasks，4 域</td><td>多会话相互依赖，memory 必须改变 action；recall 饱和的模型在此降到 20–40%</td><td>支撑「长期记忆不是长上下文」的论点</td></tr>
+        <tr><td><strong>PerLTQA</strong></td><td>141 profiles</td><td>语义/情景记忆；个人长期记忆 QA，中文</td><td>CC BY-NC 4.0；语料是对话/事件，不是文件</td></tr>
+        <tr><td><strong>P-ContextBench</strong></td><td>100 personas，10,088 hidden facts，18,261 app-trace fragments，4,810 cases</td><td>单/多源事实恢复、<strong>temporal state tracking</strong>、pattern inference、constraint-aware action</td><td>app 日志而非文件；可作为「时间状态」对照</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>D · 版本 / 过期 / 变更（最缺的一块）</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>数据集</th><th>规模</th><th>测什么</th><th>可用性</th></tr></thead>
+      <tbody>
+        <tr id="b-versionqa"><td><strong>VersionQA / VersionRAG</strong></td><td>34 份版本化技术文档（Spark/Bootstrap/Node），100 题，700+ 页</td><td><strong>版本列表、版本特定内容、显式/隐式变更检测</strong>；六个查询类别</td><td>论文称首个「版本敏感 QA」基准；代码/数据公开状态需再确认，语料可从公开文档重建</td></tr>
+        <tr id="b-hoh"><td><strong>HoH</strong><br><span class="pill free">Apache-2.0</span></td><td>111,972 条记录；每条含 current answer + <code>outdated_infos</code>（旧答案/证据/时间）</td><td><strong>过期信息对 RAG 的伤害</strong>：语料里同时有新旧版本，看检索/生成是否被旧版带偏</td><td>HF russwest404/HoH-QAs；最适合做「旧版本干扰」探针</td></tr>
+        <tr><td><strong>NewsEdits</strong></td><td>1.2M 文章 / 4.6M 版本</td><td>真实文档版本链、句级对齐、编辑动作分类</td><td>CC BY 4.0；作为「真实版本链素材」而非 QA 基准</td></tr>
+        <tr><td><strong>arXiv-complete</strong></td><td>3.15M 论文，<code>versions</code> 配置含每版 PDF</td><td>v1…vN 的真实版本序列 + 时间戳</td><td>16 TB，只取 sample；许可混合，不可整体再分发</td></tr>
+        <tr><td><strong>DynaQuest / EvoWiki / GrowOVER / TemporalWiki</strong></td><td>各数千–数万题</td><td>Wikipedia 修订驱动的知识更新 QA</td><td>适合「过期/更新」章节的引用，不是文件级</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>E · 抽取 F1 锚点（保留）</h3>
+  <p><strong>DocRED</strong>（1,000 文档 / 96 关系，MIT）、<strong>CMeIE</strong>（~22k 句 / 44 关系）—— 外部抽取 F1，需映射 8–10 个关系，不要全映射。<br>
+  <strong>MultiHop-RAG / 2Wiki / MuSiQue / HotpotQA</strong> —— 保留为「图 vs 纯检索」的外部锚点，与选题 1 的文件结构问题正交。</p>
+</section>
+
+<section>
+  <h2><span class="n">04</span> 候选总表：文件树 × 格式 × 规模 × 解析覆盖</h2>
+  <p class="lede">这张表回答的是「拿哪个数据集能真的跑通一台 PC」。文件树深度与格式分布是从数据集的 <code>*_files.xlsx</code> 清单里逐行统计出来的，不是论文摘要里的说法。</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr>
+        <th>数据集</th><th>文件树</th><th>实际格式（按文件数）</th><th>规模</th><th>自带 QA</th><th>许可</th><th>我们解析器覆盖</th>
+      </tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>HippoCamp · Victoria_Subset</strong></td>
+          <td><strong>深度 6</strong>（9 个在 depth 6）</td>
+          <td>eml 39, pdf 23, mp3 17, png 14, ics 14, txt 12, md 11, docx 4, json 2, csv 1</td>
+          <td>137 文件</td><td>11（6 profiling + 5 factual）</td>
+          <td>Research License v1（非商业）</td>
+          <td>~77%（mp3/ics 不支持）</td>
+        </tr>
+        <tr>
+          <td><strong>HippoCamp · Adam_Subset</strong></td>
+          <td>深度 3</td>
+          <td>pdf 95, eml 12, docx 11, mp3 9, png 9, ics 5, txt 5, mp4 5, xlsx 3, sqlite 2, mkv 2</td>
+          <td>158 文件</td><td>18</td><td>同上</td><td>~85%</td>
+        </tr>
+        <tr>
+          <td><strong>HippoCamp · Bei_Subset</strong></td>
+          <td>深度 3</td>
+          <td>mp4 41, jpeg 25, jpg 24, pdf 16, png 14, gif 11, eml 5, md 3, mp3 3, docx 2, ics 1, pptx 1, mkv 1</td>
+          <td>147 文件</td><td>27</td><td>同上</td><td>~61%（且图片需 OCR/VLM）</td>
+        </tr>
+        <tr>
+          <td><strong>HippoCamp · Victoria_Fullset</strong></td>
+          <td>深度 6</td>
+          <td>pdf 435, eml 92, png 46, mp3 41, md 30, ics 28, txt 23, docx 6, json 5, xlsx 2, mp4 2, csv 1</td>
+          <td>711 文件</td><td>223</td><td>同上</td><td>~83%</td>
+        </tr>
+        <tr>
+          <td><strong>HippoCamp · Bei_Fullset</strong></td>
+          <td><strong>深度 8</strong>（最深）</td>
+          <td>mp4 157, jpg 136, jpeg 129, pdf 123, mp3 86, docx 68, png 61, txt 27, pptx 21, eml 16, md 11, gif 11, ipynb 8, pth 5, bin 4</td>
+          <td>875 文件</td><td>235</td><td>同上</td><td>~55%（视频/图片多）</td>
+        </tr>
+        <tr>
+          <td><strong>xAFS</strong>（dp_007/008/009）</td>
+          <td>persona 目录树</td>
+          <td>md/txt/csv/json/eml 类文本（邮件、Slack、会议记录、合同、实验记录）</td>
+          <td>200 / 299 / 480 文件</td><td>每个 dp 8–9 题；13 个 dp 共 110 题</td>
+          <td><span class="pill free">CC-BY-4.0</span></td><td>~100%（纯文本）</td>
+        </tr>
+        <tr>
+          <td><strong>FileGram</strong></td>
+          <td>32 个小 workspace</td>
+          <td>audio/video/image/PDF/email/文本（615 文件）</td>
+          <td>32 bundles</td><td>4,333 题，但问的是<strong>用户画像/行为</strong></td>
+          <td><span class="pill free">MIT</span></td><td>部分</td>
+        </tr>
+        <tr>
+          <td><strong>Personal Agent Bench</strong>（demo）</td>
+          <td>macOS 式 home + 8 app</td>
+          <td>PDF/XLSX/CSV/PNG/ZIP/OCR sidecar/损坏文件</td>
+          <td>~1,255 文件/任务</td><td>12 任务（oracle 含 selected/excluded/理由）</td>
+          <td><span class="pill restrict">CC-BY-NC-ND-4.0</span></td><td>中</td>
+        </tr>
+        <tr>
+          <td><strong>mcpmark</strong>（同一 demo 仓库）</td>
+          <td>45 个目录树 world</td>
+          <td>文本/配置为主</td>
+          <td>627 任务</td><td>任务型（文件操作）</td>
+          <td>CC-BY-NC-ND-4.0</td><td>高</td>
+        </tr>
+        <tr>
+          <td><strong>TheAgentCompany</strong></td>
+          <td>ownCloud 目录树</td>
+          <td>docx/xlsx/pdf/md</td>
+          <td>175 任务</td><td>任务型</td><td>见仓库</td><td>中</td>
+        </tr>
+        <tr>
+          <td><strong>OfficeBench</strong></td>
+          <td>每任务一个目录</td>
+          <td>docx/xlsx/pdf/ics/eml</td>
+          <td>300 任务</td><td>任务型</td><td>见仓库</td><td>中</td>
+        </tr>
+        <tr>
+          <td><strong>EnronQA</strong></td>
+          <td>150 个收件箱文件夹</td>
+          <td>仅 email</td>
+          <td>103,638 邮件</td><td>528,304 QA</td>
+          <td>论文 CC BY 4.0；隐私有争议</td><td>高，但<strong>不异构</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2><span class="n">05</span> 文件树实测：三份 subset 与 fullset 的深度分布</h2>
+  <p class="lede">为什么「文件树结构」不能只看论文描述：HippoCamp 的三个 subset 里只有 Victoria 真的深（depth 6），Adam 与 Bei 的 subset 都压平到 depth 3，而 Bei 的 fullset 才到 depth 8。下面每个条是该数据集的全部文件，按所在目录深度分配。</p>
+
+  <div class="tree-grid" id="trees"></div>
+
+  <div class="cols">
+    <div class="callout">
+      <div class="t">Victoria_Subset 的画像（实测）</div>
+      174 条目 = 137 文件 + 37 目录；时间跨度 2019-01-06 → 2026-07-10；按创建年份 2025:82 / 2024:21 / 2026:17 / 2023:11 / 2021:3 / 2019:2 / 2022:1；
+      模态 document 78 / text 28 / audio 17 / image 14；顶层目录 Documents 98、Pictures 7、Meta 6、Uber 6、Walmart 6、Intel 5、Downloads 4、Microsoft 4、Chrome 1。
+    </div>
+    <div class="callout">
+      <div class="t">选它的代价（这也是期中发现）</div>
+      当前 41 后缀白名单不支持 <code>.ics</code> <code>.mp3</code> <code>.mp4</code> <code>.mkv</code> <code>.sqlite</code> <code>.gif</code>。
+      Victoria_Subset 里 mp3 17 + ics 14 = 31/137 ≈ <strong>23% 文件无法解析</strong>。
+      替代：Adam_Subset 只有 14.6% 不支持但树只有 depth 3；xAFS 100% 可解析、CC-BY、树也真实，但纯文本、练不到解析层。
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="n">06</span> 反面样本：MultiHop-RAG 没有文件树</h2>
+  <p class="lede">现有 eval 的主力 <code>corpus.json</code> 是一个<strong>扁平的文章数组</strong>，每条只有 7 个字段。没有 <code>path</code> / <code>folder</code> / <code>dir</code> / <code>version</code>，每题的 <code>evidence_list</code> 用 title / url / fact 指向 2–4 篇独立新闻文章（论文口径 609 篇 / 2,556 题）。</p>
+  <pre><span class="c">// corpus.json 的单条结构</span>
+{ "title": …, "author": …, "source": …, "published_at": …,
+  "category": …, "url": …, "body": … }</pre>
+  <p>所以它本质是 <strong>article-level multi-hop retrieval</strong>：语料是「一堆文章」，不是「一台电脑」。它能覆盖的只有 <strong>A8</strong>（图 vs 纯检索、null 题拒答）与 <strong>A1 的文本部分</strong>（但只有 news 一种体裁）；A2 版本、A3 项目、A4 引用、A5 时间线、A6 增量全部 <strong>❌</strong>。</p>
+  <p class="note">正文里偶尔出现的 “UPDATE:” 是新闻编辑痕迹，不是版本标注，不能当版本链用。</p>
+</section>
+
+<section>
+  <h2><span class="n">07</span> 许可与伦理（写报告时要写）</h2>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>资源</th><th>许可</th><th>约束</th></tr></thead>
+      <tbody>
+        <tr><td>HippoCamp</td><td>HippoCamp Research License v1</td><td>仅非商业研究；不可再分发原始文件；引用论文</td></tr>
+        <tr><td>xAFS</td><td>CC-BY-4.0</td><td>可改写，需署名 + 说明修改</td></tr>
+        <tr><td>FileGram</td><td>MIT</td><td>可自由使用</td></tr>
+        <tr><td>Personal Agent Bench</td><td>demo 在 HF；full 商业</td><td>full 需授权；不要打包进提交物</td></tr>
+        <tr><td>EnronQA</td><td>论文标 CC BY 4.0，底层 Enron 有隐私争议</td><td>不建议作为主打；不二次分发；说明伦理限制</td></tr>
+        <tr><td>HoH</td><td>Apache-2.0（贡献部分）+ Wikipedia CC BY-SA</td><td>再分发改写文本要 ShareAlike</td></tr>
+        <tr><td>MemoryAgentBench / LongMemEval</td><td>MIT</td><td>可自由使用</td></tr>
+        <tr><td>VersionQA</td><td>待确认</td><td>若不可获取，用公开文档重建并说明</td></tr>
+        <tr><td>PerLTQA / LoCoMo</td><td>CC BY-NC 4.0</td><td>非商业</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">HippoCamp 的文件来自 100+ 真实参与者聚合/匿名化，虽然许可允许研究使用，报告里应明确「不是我们的真实用户数据」，避免「真实个人文件」的表述。</p>
+</section>
+
+<section>
+  <h2><span class="n">08</span> 由对照推出的评测方案</h2>
+
+  <h3>Track 1 · 外部公开基准（便宜、可比、写进报告）</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>目的</th><th>数据集</th><th>规模</th><th>备注</th></tr></thead>
+      <tbody>
+        <tr><td>图 vs 纯检索</td><td>MultiHop-RAG 1/4 分层抽样</td><td>639 题 × 3 条件</td><td>保持现有口径不变</td></tr>
+        <tr><td>版本敏感 QA</td><td>VersionQA</td><td>100 题</td><td>先确认数据可获取；否则用公开文档重建同构 30–50 题</td></tr>
+        <tr><td>旧版本干扰</td><td>HoH 分层抽样</td><td>500–1,000 题</td><td>索引 current + outdated，测「是否答最新」</td></tr>
+        <tr><td>增量冲突</td><td>MemoryAgentBench · FactConsolidation</td><td>子集</td><td>测「新事实覆盖旧事实」</td></tr>
+        <tr><td>抽取 F1</td><td>DocRED / CMeIE</td><td>dev</td><td>映射 8–10 个关系</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">这套加起来 GPU 与 API 成本都远小于 MultiHop-RAG 全量，且每一项都能单独出一张表。</p>
+
+  <h3>Track 2 · 自建 personal corpus（回答「结构化到底补了什么」）</h3>
+  <div class="cols">
+    <div class="callout">
+      <div class="t">基底二选一</div>
+      <p style="margin:6px 0"><strong>xAFS（推荐）</strong>：CC-BY-4.0，837 MB，<code>dp_007</code>(200) + <code>dp_008</code>(299) + <code>dp_009</code>(480) ≈ <strong>979 文件</strong>，天然有项目命名与跨上下文文件；适合注入版本链。</p>
+      <p style="margin:6px 0"><strong>HippoCamp subset</strong>：158+147+137 = <strong>442 文件</strong>，真实文件 + 多模态；但 research-only，且向真实 docx/pdf 注入合成版本很别扭 —— 更适合作为不改动的外部多模态验证集。</p>
+    </div>
+    <div class="callout">
+      <div class="t">在基座上受控注入（核心贡献）</div>
+      <ol style="margin:6px 0;padding-left:18px">
+        <li><strong>版本链</strong>：60–100 条，每条 3–5 版；命名模拟 <code>_v1 / _final / _final(2) / 副本</code>；每版替换 1–3 个关键事实，保留「旧版仍可检索」</li>
+        <li><strong>项目归属</strong>：3–5 个项目，文件跨 4–6 个目录；15–20% 同主题错项目 distractor</li>
+        <li><strong>引用边</strong>：wikilink / DOI / 文件名 mention，带可验证 quote</li>
+        <li><strong>时间线</strong>：mtime + 内容内日期；制造 1–2 处冲突</li>
+        <li><strong>增量序列</strong>：3–5 个摄入 wave，含 supersede / rename / delete / restore</li>
+        <li><strong>抽取 gold</strong>：40 个文件标注实体+关系（或由生成器同时产出 planted facts）</li>
+        <li><strong>QA</strong>：150–250 题，覆盖 8 类</li>
+      </ol>
+    </div>
+  </div>
+  <p class="note"><strong>规模控制</strong>：目标 400–800 文件 / 3–5k chunks。这与仓库自己给出的「Mac 上不超过 300 chunk」建议冲突 —— 若坚持本地 7B，把注入语料压到 300 chunk，大基座留给 Track 1；若走 API/GPU，再放大到 3–5k。</p>
+
+  <h3>Track 3 · 可选：Agent 行为</h3>
+  <p>Personal Agent Bench 的 12 任务 demo（尤其 <code>tax_packet</code> 三个 seed）可直接复用其 oracle 做「版本选择 + decoy 判别」的行为指标；但需要接它的 harness，成本高于 Track 1/2，建议只在 demo 里展示、不进主实验。</p>
+</section>
+
+<section>
+  <h2><span class="n">09</span> 对仓库文档的一处修正</h2>
+  <div class="callout">
+    <div class="t">docs/benchmark-catalogue.md 里那句话 2026 年只对了一半</div>
+    原文：「公开 benchmark 一个都测不了版本链、项目归属、时间线、增量刷新、异构解析」。现在应改成「公开 benchmark 覆盖<strong>环境</strong>与<strong>单点能力</strong>，但不覆盖四者的<strong>联合标注</strong>」：
+    <ul style="margin:8px 0 0;padding-left:18px">
+      <li>异构文件 / 个人文件树 / 跨文件推理 → HippoCamp、xAFS、FileGram</li>
+      <li>版本敏感 QA → VersionQA；过期信息 → HoH；增量冲突 → MemoryAgentBench</li>
+      <li>仍然没有：在个人文件树上对「版本链 + 项目归属 + 引用边 + 文件生命周期」的联合标注</li>
+    </ul>
+    并新增一节 “personal-file benchmarks (2026)”。
+  </div>
+
+  <h3>下一步（按性价比排序）</h3>
+  <ol>
+    <li><strong>先确认可获取性</strong>：<code>supermemory/xAFS</code>（CC-BY，直接下）、<code>MMMem-org/HippoCamp</code>（需接受 research license）、<code>MichaelR207/enron_qa_0922</code>、<code>russwest404/HoH-QAs</code>、<code>ai-hyz/MemoryAgentBench</code>、<code>Choiszt/FileGram</code></li>
+    <li><strong>跑一次解析覆盖率</strong>：xAFS 3 个 dp + HippoCamp 3 个 subset，用 <code>sci-rag ingest --dry-run</code> 看 41 后缀白名单实际命中多少、失败在哪</li>
+    <li><strong>写版本注入器 spec</strong>：输入一个 dp 目录，输出「加了版本链 / 项目标签 / 引用边 / 时间线」的新目录 + <code>gold.jsonl</code></li>
+    <li><strong>定 QA 模板</strong>：8 类各 20–30 条，先手写 10 条 pilot，确认「图能答、纯 RAG 答不出」的区分度</li>
+    <li><strong>再决定 Track 3 是否要做</strong></li>
+  </ol>
+</section>
+
+<footer>
+  <p><strong>来源</strong>：同一轮调研的三段记录 —— 17:05 UTC（结论 / A1–A8 / 分层候选 / 覆盖矩阵 / 评测方案 / 许可）、17:17 UTC（MultiHop-RAG 结构确认 / 候选总表 / Victoria_Subset 选择理由）、以及 17:14–17:16 UTC 从 <code>*_files.xlsx</code> 清单统计出的深度与后缀分布。</p>
+  <p><strong>可信度</strong>：A1–A8 与矩阵读法来自调研判断；规模、许可、HF 路径是当时从论文页 / HF API 读到的数字，未逐条复核，正式引用前请回源。文件树深度与格式计数是对 xlsx 清单的直接统计，可复现。</p>
+  <p><strong>生成</strong>：2026-11-10 · pj01/dataset-benchmark-compare.html · 单文件、无外部依赖</p>
+</footer>
+
+</div>
+
+<script>
+const THEME_KEY = 'pj01-dataset-compare-theme';
+const html = document.documentElement;
+const saved = localStorage.getItem(THEME_KEY);
+if (saved) html.dataset.theme = saved;
+else if (window.matchMedia('(prefers-color-scheme: dark)').matches) html.dataset.theme = 'dark';
+document.getElementById('themeBtn').addEventListener('click', () => {
+  const next = html.dataset.theme === 'dark' ? 'light' : 'dark';
+  html.dataset.theme = next;
+  localStorage.setItem(THEME_KEY, next);
+});
+
+/* ---------- coverage matrix ---------- */
+const BENCH = [
+  { k:'hippocamp', name:'HippoCamp',          href:'#b-hippocamp' },
+  { k:'xafs',      name:'xAFS',               href:'#b-xafs' },
+  { k:'filegram',  name:'FileGram',           href:'#b-filegram' },
+  { k:'pab',       name:'Personal Agent Bench', href:'#b-pab' },
+  { k:'enron',     name:'EnronQA',            href:'#b-enron' },
+  { k:'versionqa', name:'VersionQA',          href:'#b-versionqa' },
+  { k:'hoh',       name:'HoH',                href:'#b-hoh' },
+  { k:'mab',       name:'MemoryAgentBench',   disp:'MemoryAgent<wbr>Bench', href:'#b-mab' },
+];
+const ATTR = [
+  { id:'A1', label:'异构文件' },
+  { id:'A2', label:'多版本 / 无 VCS' },
+  { id:'A3', label:'项目归属跨目录' },
+  { id:'A4', label:'文件间引用' },
+  { id:'A5', label:'时间线 / 过期' },
+  { id:'A6', label:'增量更新' },
+  { id:'A7', label:'Agent 主动调用' },
+  { id:'A8', label:'拒答 / 反幻觉' },
+];
+/* order matches BENCH: hippo, xafs, filegram, pab, enron, versionqa, hoh, mab */
+const M = {
+  A1: ['full','part','part','full','none','part','none','none'],
+  A2: ['part','none','part','full','none','full','full','part'],
+  A3: ['part','full','part','part','part','none','none','none'],
+  A4: ['part','part','part','part','part','none','none','none'],
+  A5: ['full','part','part','part','full','full','full','part'],
+  A6: ['none','none','part','part','none','none','part','full'],
+  A7: ['part','none','part','full','none','none','none','part'],
+  A8: ['part','none','none','part','none','part','part','part'],
+};
+const GLYPH = { full:'✓', part:'◐', none:'✗' };
+const JOINT = ['A2','A3','A4','A6'];
+
+const head = document.getElementById('mHead');
+BENCH.forEach((b, i) => {
+  const th = document.createElement('th');
+  th.innerHTML = `<a href="${b.href}" style="color:inherit;border-bottom:none;display:block;padding:2px 0">${b.disp || b.name}</a>`
+               + `<span style="display:block;font-family:var(--mono);font-size:10px;color:var(--fg3);font-weight:400">${i}</span>`;
+  th.dataset.col = i;
+  head.appendChild(th);
+});
+
+const body = document.getElementById('mBody');
+ATTR.forEach(a => {
+  const tr = document.createElement('tr');
+  tr.dataset.row = a.id;
+  const th = document.createElement('th');
+  th.innerHTML = `<span class="aid">${a.id}</span>${a.label}`;
+  tr.appendChild(th);
+  M[a.id].forEach((v, i) => {
+    const td = document.createElement('td');
+    td.innerHTML = `<span class="cell ${v === 'full' ? 'ok' : v === 'part' ? 'part' : 'no'}" title="${BENCH[i].name} · ${a.id} ${a.label}">${GLYPH[v]}</span>`;
+    tr.appendChild(td);
+  });
+  body.appendChild(tr);
+});
+
+/* summary rows */
+const foot = document.getElementById('mFoot');
+const nFull = BENCH.map((_, i) => ATTR.filter(a => M[a.id][i] === 'full').length);
+const nJoint = BENCH.map((_, i) => JOINT.filter(id => M[id][i] === 'full').length);
+const maxFull = Math.max(...nFull);
+document.getElementById('stat-max').innerHTML = maxFull + '<small> / 8</small>';
+
+const r1 = document.createElement('tr');
+r1.innerHTML = '<th>原生 ✓ 合计</th>' + nFull.map(n =>
+  `<td style="color:${n >= 3 ? 'var(--ok)' : n === 0 ? 'var(--no)' : 'var(--fg2)'};font-weight:600">${n}</td>`).join('');
+foot.appendChild(r1);
+
+const r2 = document.createElement('tr');
+r2.innerHTML = '<th>A2+A3+A4+A6 ✓</th>' + nJoint.map(n =>
+  `<td style="color:${n === 0 ? 'var(--no)' : 'var(--part)'};font-weight:600">${n}/4</td>`).join('');
+foot.appendChild(r2);
+
+/* hover crosshair + click to isolate a column */
+const allTh = [...head.querySelectorAll('th[data-col]')];
+const allTr = [...body.querySelectorAll('tr')];
+function clearHL(){
+  document.querySelectorAll('.colhl').forEach(e => e.classList.remove('colhl'));
+  document.querySelectorAll('.rowhl').forEach(e => e.classList.remove('rowhl'));
+}
+allTh.forEach(th => {
+  th.addEventListener('mouseenter', () => {
+    clearHL();
+    const c = +th.dataset.col + 1;
+    allTr.forEach(tr => tr.children[c]?.classList.add('colhl'));
+  });
+  th.addEventListener('mouseleave', clearHL);
+});
+allTr.forEach(tr => {
+  tr.addEventListener('mouseenter', () => {
+    clearHL(); tr.classList.add('rowhl');
+    const c = +tr.dataset.row.replace('A','') - 1;
+    BENCH.forEach((_, i) => allTh[i]?.classList.add(i === c ? 'colhl' : ''));
+  });
+  tr.addEventListener('mouseleave', clearHL);
+});
+
+/* dim partial / none */
+const dimBtn = document.getElementById('dimBtn');
+dimBtn.addEventListener('click', () => {
+  const on = dimBtn.getAttribute('aria-pressed') === 'true';
+  dimBtn.setAttribute('aria-pressed', String(!on));
+  document.getElementById('matrix').classList.toggle('dim', !on);
+});
+
+/* ---------- depth distributions ---------- */
+const TREES = [
+  { nm:'HippoCamp · Victoria_Subset', sub:'137 文件 + 37 目录', depth:6,
+    hist:{1:9,2:51,3:53,4:48,5:4,6:9},
+    ext:[['eml',39],['pdf',23],['mp3',17],['png',14],['ics',14],['txt',12],['md',11],['docx',4],['json',2],['csv',1]],
+    unsupported:['ics','mp3'] },
+  { nm:'HippoCamp · Adam_Subset', sub:'158 文件', depth:3,
+    hist:{1:101,2:13,3:56},
+    ext:[['pdf',95],['eml',12],['docx',11],['mp3',9],['png',9],['ics',5],['txt',5],['mp4',5],['xlsx',3],['sqlite',2],['mkv',2]],
+    unsupported:['mp3','ics','mp4','sqlite','mkv'] },
+  { nm:'HippoCamp · Bei_Subset', sub:'147 文件', depth:3,
+    hist:{1:40,2:122,3:12},
+    ext:[['mp4',41],['jpeg',25],['jpg',24],['pdf',16],['png',14],['gif',11],['eml',5],['md',3],['mp3',3],['docx',2],['ics',1],['pptx',1],['mkv',1]],
+    unsupported:['mp4','mp3','gif','mkv'] },
+  { nm:'HippoCamp · Victoria_Fullset', sub:'711 文件', depth:6,
+    hist:{1:18,2:472,3:133,4:116,5:12,6:23},
+    ext:[['pdf',435],['eml',92],['png',46],['mp3',41],['md',30],['ics',28],['txt',23],['docx',6],['json',5],['xlsx',2],['mp4',2],['csv',1]],
+    unsupported:['ics','mp3','mp4'] },
+  { nm:'HippoCamp · Bei_Fullset', sub:'875 文件', depth:8,
+    hist:{1:103,2:658,3:101,4:36,5:29,6:10,7:16,8:11},
+    ext:[['mp4',157],['jpg',136],['jpeg',129],['pdf',123],['mp3',86],['docx',68],['png',61],['txt',27],['pptx',21],['eml',16],['md',11],['gif',11],['ipynb',8],['pth',5],['bin',4]],
+    unsupported:['mp4','mp3','gif'] },
+  { nm:'HippoCamp · Adam_Fullset', sub:'382 条目', depth:3,
+    hist:{1:207,2:72,3:103},
+    ext:[['pdf',195],['png',30],['eml',28],['mp3',24],['docx',23],['ics',13],['txt',8],['xlsx',6],['sqlite',5],['csv',5],['mp4',5],['mkv',2]],
+    unsupported:['mp3','ics','mp4','sqlite','mkv'] },
+];
+/* colour keyed by depth value (not row position) so d3 looks the same in every dataset */
+const DEPTH_COLORS = {1:'#dcefe6',2:'#bfe3d3',3:'#9bd1bc',4:'#74bda4',5:'#54a68c',6:'#3c8b74',7:'#2c6e5c',8:'#1f5145'};
+const DEPTH_TEXT = d => d <= 2 ? '#1c3a31' : '#fff';
+const host = document.getElementById('trees');
+TREES.forEach(t => {
+  const total = Object.values(t.hist).reduce((a, b) => a + b, 0);
+  const depths = Object.keys(t.hist).map(Number).sort((a, b) => a - b);
+  const row = document.createElement('div');
+  row.className = 'tree-row';
+  const segs = depths.map(d => {
+    const w = (t.hist[d] / total) * 100;
+    return `<span style="width:${w}%;background:${DEPTH_COLORS[d]}" title="depth ${d} · ${t.hist[d]} 文件 (${w.toFixed(1)}%)"><em style="color:${DEPTH_TEXT(d)}">${w > 7 ? t.hist[d] : ''}</em></span>`;
+  }).join('');
+  const chips = depths.map(d =>
+    `<span class="chip"><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${DEPTH_COLORS[d]};margin-right:4px"></i>d${d} ${t.hist[d]}</span>`).join('');
+  const extChips = t.ext.slice(0, 12).map(([e, n]) => {
+    const hot = t.unsupported.includes(e);
+    return `<span class="chip ${hot ? 'hot' : ''}" title="${hot ? '当前白名单不支持' : '可解析'}">.${e} <i>${n}</i></span>`;
+  }).join('');
+  row.innerHTML = `
+    <div class="tree-head">
+      <span class="nm">${t.nm}</span>
+      <span class="sub">${t.sub} · 清单 ${total} 行</span>
+      <span class="depth">max depth <b>${t.depth}</b></span>
+    </div>
+    <div class="bar">${segs}</div>
+    <div class="chips">${chips}</div>
+    <div class="chips" style="margin-top:6px">${extChips}</div>`;
+  host.appendChild(row);
+});
+</script>
+</body>
+</html>

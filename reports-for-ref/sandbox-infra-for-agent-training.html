@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>为 Agent 后训练而生的大规模沙箱基础设施：我们能借什么，不要借什么</title>
+<style>
+  :root{
+    --bg:#fbfbf8;
+    --panel:#ffffff;
+    --panel-2:#f3f4ef;
+    --text:#1b1d1a;
+    --muted:#5c6159;
+    --line:#d8dbd2;
+    --accent:#0f6b5f;
+    --accent-soft:#e2f0ec;
+    --warn:#9a5b00;
+    --warn-soft:#fdf1de;
+    --bad:#9b2c2c;
+    --bad-soft:#fbe9e7;
+    --code-bg:#12211f;
+    --code-text:#dff3ee;
+    --radius:10px;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono","Courier New",monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#101316;
+      --panel:#171b1f;
+      --panel-2:#1e2429;
+      --text:#e7eae6;
+      --muted:#a0a8a2;
+      --line:#2c343a;
+      --accent:#5fd6c2;
+      --accent-soft:#12312c;
+      --warn:#e0a94a;
+      --warn-soft:#2e2515;
+      --bad:#f08a80;
+      --bad-soft:#2f1c1a;
+      --code-bg:#0b1214;
+      --code-text:#d6efe9;
+    }
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    font-size:16px;
+    line-height:1.72;
+    letter-spacing:.01em;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:32px 20px 80px}
+  header.hero{border-bottom:1px solid var(--line);padding-bottom:22px;margin-bottom:8px}
+  .kicker{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:600;margin:0 0 10px}
+  h1{font-size:clamp(24px,3.4vw,34px);line-height:1.3;margin:0 0 10px;letter-spacing:-.01em}
+  .sub{color:var(--muted);font-size:15px;margin:0}
+  h2{font-size:clamp(19px,2.4vw,23px);margin:44px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--line);letter-spacing:-.005em}
+  h3{font-size:17px;margin:28px 0 8px}
+  h4{font-size:15px;margin:20px 0 6px;color:var(--accent)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  a{color:var(--accent);text-decoration:none;border-bottom:1px solid color-mix(in srgb,var(--accent) 40%,transparent)}
+  a:hover{border-bottom-color:var(--accent)}
+  code{font-family:var(--mono);font-size:.88em;background:var(--panel-2);padding:1px 5px;border-radius:4px;border:1px solid var(--line)}
+  p code, li code, .sub code{overflow-wrap:anywhere;word-break:break-word}
+  pre{margin:14px 0;background:var(--code-bg);color:var(--code-text);padding:14px 16px;border-radius:var(--radius);overflow-x:auto;font-size:13px;line-height:1.62;border:1px solid var(--line)}
+  pre code{background:none;border:none;padding:0;font-size:inherit;color:inherit}
+  .lede{
+    background:var(--accent-soft);
+    border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);
+    border-left:4px solid var(--accent);
+    border-radius:var(--radius);
+    padding:16px 18px;margin:22px 0 8px;
+  }
+  .lede p{margin:6px 0}
+  .lede strong{color:var(--accent)}
+  .note{border:1px solid var(--line);background:var(--panel);border-radius:var(--radius);padding:12px 16px;margin:16px 0;font-size:14.5px;color:var(--muted)}
+  .note b{color:var(--text)}
+  .warnbox{border:1px solid color-mix(in srgb,var(--warn) 40%,transparent);background:var(--warn-soft);border-radius:var(--radius);padding:12px 16px;margin:16px 0;font-size:14.5px}
+  .badbox{border:1px solid color-mix(in srgb,var(--bad) 35%,transparent);background:var(--bad-soft);border-radius:var(--radius);padding:12px 16px;margin:16px 0;font-size:14.5px}
+  .tablewrap{overflow-x:auto;margin:16px 0;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel)}
+  table{border-collapse:collapse;width:100%;min-width:760px;font-size:13.5px}
+  caption{caption-side:top;text-align:left;padding:10px 12px 0;color:var(--muted);font-size:13px}
+  th,td{padding:9px 11px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+  thead th{background:var(--panel-2);font-weight:650;font-size:13px;letter-spacing:.02em;position:static}
+  tbody tr:last-child td{border-bottom:none}
+  td code{font-size:12px}
+  .tag{display:inline-block;font-size:11.5px;padding:1px 7px;border-radius:999px;border:1px solid var(--line);background:var(--panel-2);color:var(--muted);white-space:nowrap;font-family:var(--mono)}
+  .tag.p0{background:var(--accent-soft);color:var(--accent);border-color:color-mix(in srgb,var(--accent) 35%,transparent)}
+  .tag.p1{background:var(--warn-soft);color:var(--warn);border-color:color-mix(in srgb,var(--warn) 35%,transparent)}
+  .tag.p2{background:var(--bad-soft);color:var(--bad);border-color:color-mix(in srgb,var(--bad) 30%,transparent)}
+  .pill{display:inline-block;font-size:12px;padding:1px 8px;border-radius:999px;background:var(--panel-2);border:1px solid var(--line);color:var(--muted);margin-right:6px}
+  .figure{margin:20px 0;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);padding:10px}
+  .figure svg{display:block;width:100%;height:auto}
+  figcaption{color:var(--muted);font-size:13px;padding:6px 8px 2px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+  @media (max-width:760px){.grid2{grid-template-columns:1fr}}
+  .card{border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);padding:14px 16px}
+  .card h4{margin-top:0}
+  .checklist{list-style:none;padding-left:0}
+  .checklist li{padding-left:26px;position:relative;margin:7px 0}
+  .checklist li::before{content:"▢";position:absolute;left:2px;color:var(--accent);font-size:15px}
+  .kv{font-size:14px}
+  .src{font-size:14px}
+  .src li{margin:9px 0}
+  .src .kind{display:inline-block;font-size:11px;padding:0 6px;border-radius:4px;margin-left:4px;border:1px solid var(--line);background:var(--panel-2);color:var(--muted);font-family:var(--mono)}
+  .src .kind.off{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 35%,transparent)}
+  .src .kind.pap{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 35%,transparent)}
+  .src .kind.inf{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 30%,transparent)}
+  .toc{border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);padding:14px 18px;margin:22px 0}
+  .toc ol{columns:2;column-gap:28px;margin:6px 0 0;padding-left:20px;font-size:14px}
+  @media (max-width:700px){.toc ol{columns:1}}
+  .toc li{margin:3px 0}
+  footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font-size:13px}
+  .svg-label{font-family:var(--sans);font-size:13px;font-weight:600;fill:var(--text)}
+  .svg-sub{font-family:var(--sans);font-size:11.5px;fill:var(--muted)}
+  .svg-badge{font-family:var(--mono);font-size:10.5px;fill:var(--accent)}
+  .svg-badge-skip{font-family:var(--mono);font-size:10.5px;fill:var(--bad)}
+  .box{fill:var(--panel-2);stroke:var(--line);stroke-width:1.5}
+  .box-need{fill:var(--accent-soft);stroke:var(--accent);stroke-width:2}
+  .box-skip{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:5 4}
+  .arrow{stroke:var(--muted);stroke-width:1.6;fill:none}
+  .arrow-accent{stroke:var(--accent);stroke-width:1.8;fill:none;stroke-dasharray:6 4}
+  .group{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 5}
+  @media print{ body{background:#fff} pre{white-space:pre-wrap} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <p class="kicker">调研报告 · pj01 选题 1 · PC-Mem</p>
+  <h1>为 Agent 后训练而生的大规模沙箱基础设施：我们能借什么，不要借什么</h1>
+  <p class="sub">面向一个「137 个文件、11 道 QA、没有 GPU 集群」的课程项目，重读 2025–2026 年的 agent 环境基建。报告写作时间：2026 年 11 月。</p>
+</header>
+
+<div class="lede">
+  <p><strong>结论先行（5 行内）</strong></p>
+  <p>① 2026 年的沙箱热不是为了「安全地跑代码」，而是为了<strong>让 reward 可从环境状态里读出来</strong>：每个优化步要上千个可重置、可并行、状态干净、全程留痕的环境。</p>
+  <p>② 那套东西的<strong>规模</strong>（K8s + 微虚机 + rollout 调度）我们用不上；但它的<strong>契约</strong>（只读语料 + 可写覆盖层 + 固定时钟 + 网络策略 + verifier + 轨迹落盘）几乎可以 1:1 抄进一个 <code>docker run</code>。</p>
+  <p>③ 对我们收益最大的三件事是：<strong>每语料一个只读容器</strong>、<strong>每次运行一个 manifest（可复现指纹）</strong>、<strong>verifier 钩子 + 证据落盘</strong>。microVM / K8s / 托管 sandbox API 明确不借。</p>
+</div>
+
+<nav class="toc">
+  <strong style="font-size:14px">目录</strong>
+  <ol>
+    <li><a href="#why">为什么 2026 年突然需要「沙箱基础设施」</a></li>
+    <li><a href="#scale">先看清规模差：前沿后训练 vs 我们</a></li>
+    <li><a href="#landscape">Landscape：四张表</a></li>
+    <li><a href="#arch">架构模式图与「我们只要哪几个框」</a></li>
+    <li><a href="#borrow">可借用清单 P0 / P1 / P2</a></li>
+    <li><a href="#design">最小设计：可直接抄的目录与命令</a></li>
+    <li><a href="#cost">成本与时间量级</a></li>
+    <li><a href="#limits">边界：沙箱不保证什么</a></li>
+    <li><a href="#sources">Sources</a></li>
+    <li><a href="#one">如果只做一件事</a></li>
+  </ol>
+</nav>
+
+<h2 id="why">1. 为什么 2026 年突然需要「沙箱基础设施」</h2>
+
+<p>结论：因为<strong>「环境」从评测的附庸变成了训练数据的生产设备</strong>。当 agent 的后训练靠 RL / rejection sampling 时，环境不再是「跑一次评测的场地」，而是「每个优化步都要吐出成千条轨迹的工厂」。工厂的瓶颈不在模型，而在 CPU 侧的容器生命周期。下面五条是驱动因素，逐条标注证据强度。</p>
+
+<h3>1.1 五个驱动因素</h3>
+
+<ol>
+  <li><strong>Reward 必须从环境状态读出来，而不是从文本里猜。</strong> 主流环境把「任务是否完成」定义为对系统最终状态的检查：AndroidWorld 的 evaluator 直接查 SQLite 表里新增/删除的行，而不是比对截图；MCPMark 每个任务带一个确定性 Python 验证脚本，跑完检查最终环境状态并重置环境。<span class="pill">直接证据</span> 这条对我们最有用：<em>QA 的分数也应该来自对图谱/文件系统的断言，而不是「模型说完成了」</em>。</li>
+
+  <li><strong>并行 rollout 的瓶颈从 GPU 转移到了 CPU 沙箱的冷启动。</strong> Google Cloud 在 2026-09 发布 GKE Agent Sandbox 时的官方说法是：GPU 集群空转、等待「数分钟」的 CPU 沙箱冷启动，加上数千次几 GB 级的 SWE-bench 风格镜像拉取与调度积压，是「一个静悄悄拖慢研究、烧掉训练预算的沙箱基础设施问题」；他们宣称新版把这件事加速了约 45×。<span class="pill">官方声明（厂商博客，未独立复现）</span></li>
+
+  <li><strong>状态污染与调度面本身会崩。</strong> R2E-Gym 的技术报告记录了一个很具体的失败：单个 GRPO 迭代要并行起 512 个 Docker 容器（batch 64 × 8 rollouts），并发实验把上千个容器推上天，<em>单机 Docker 的 API server 过载、daemon 最终崩溃</em>，于是他们把环境编排搬到了 Kubernetes。<span class="pill">论文报告</span> 这是「不是跑个 Docker 就行」最硬的证据。</li>
+
+  <li><strong>轨迹本身是产品，需要被统一采集。</strong> Verifiers 这类库把一次 rollout 明确拆成 <code>prompt / completion / answer / state / info</code> 字段；AgentOhana 的工作是把异构来源的轨迹统一成同一种多轮格式再训；SWE-Gym / SWE-smith / R2E-Gym 的价值主张都是「可执行环境中批量合成的任务 + 成功轨迹」。<span class="pill">论文/官方文档</span> 换句话说：<em>没有轨迹 schema，就没有后训练</em>。</li>
+
+  <li><strong>安全边界变硬了。</strong> 当 agent 自动生成并执行未经人审的代码，容器逃逸不再是理论风险：Docker 默认的 runc 共享宿主内核，一次内核提权就等于拿到同机所有容器；Firecracker 用 KVM 做硬件隔离（约 100–200 ms 启动、每 microVM 内存开销 &lt;5 MiB），gVisor 用用户态内核重实现 syscall 面，Kata 则把 microVM 包装成标准容器 API。<span class="pill">厂商技术博客（第三方横向评测）</span></li>
+</ol>
+
+<h3>1.2 反面：为什么「跑个 Docker」不够</h3>
+
+<p>把上面五条合起来看，「沙箱基础设施」这个词其实指四件互相耦合的事，缺一件就不成立：</p>
+
+<div class="grid2">
+  <div class="card">
+    <h4>① 生命周期（reset / snapshot）</h4>
+    <p class="kv">一次 rollout 之后环境必须回到确定状态，否则第二条轨迹被第一条污染。OSWorld 的 <code>DesktopEnv</code> 直接照 Gym 的写法：<code>__init__ → reset(task_config) → step → evaluate → cleanup</code>，并管理 VM 快照。<span class="pill">文档/二手整理</span></p>
+  </div>
+  <div class="card">
+    <h4>② 并发（pool / 冷启动预算）</h4>
+    <p class="kv">池化、预热镜像、按需扩容。这一层决定了「每小时能产出多少条轨迹」，也就是单位数据成本。</p>
+  </div>
+  <div class="card">
+    <h4>③ 可验证性（verifier 契约）</h4>
+    <p class="kv">环境必须能回答「这个任务成功了吗」，且答案是可复算的（脚本/断言），不是 LLM 打分。<span class="pill">直接证据</span></p>
+  </div>
+  <div class="card">
+    <h4>④ 留痕（trajectory / artifact）</h4>
+    <p class="kv">每一步的 action、observation、工具返回、最终产物都要落盘，并且和「哪个环境版本、哪个语料版本」绑定。</p>
+  </div>
+</div>
+
+<div class="note">
+  <b>研究者的读法（推断，非任何单一来源的原文）：</b>这四件事的共性成本是「<em>状态的边界要显式声明</em>」。一旦你把「哪些是只读输入、哪些是可写产物、哪些是外部副作用、时钟从哪来」写进配置，你就同时拿到了隔离、复现和可验证性。规模只是把这套声明复制一万份。<strong>这正是小项目能借的部分——借声明方式，不借复制机器。</strong>
+</div>
+
+<h2 id="scale">2. 先看清规模差：前沿后训练 vs 我们</h2>
+
+<div class="tablewrap">
+<table>
+  <caption>表 0：把「规模」和「设计」分开看。我们借右列之外的一切，除了数量级。</caption>
+  <thead>
+    <tr><th>维度</th><th>前沿 agent 后训练（2026）</th><th>pj01 / PC-Mem</th><th>结论</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>每优化步的并发环境</td><td>10³–10⁴ 个容器/微虚机</td><td>1（11 道 QA 串行即可）</td><td>池化、调度器全部不需要</td></tr>
+    <tr><td>环境数量</td><td>10³–10⁵ 个任务实例</td><td>1 个 PC 样本 + 1 个公开检索基准（MultiHop-RAG）</td><td>环境生成（EnvScaler / OS-Genesis）不需要</td></tr>
+    <tr><td>冷启动预算</td><td>100 ms–2 s（否则 GPU 空转）</td><td>10–30 s 完全可接受</td><td>microVM、镜像预热不需要</td></tr>
+    <tr><td>硬件</td><td>GPU 集群 + K8s + 微虚机</td><td>一台笔记本 / 一台 2C4G 云主机</td><td>托管 sandbox API 不需要</td></tr>
+    <tr><td>目标产物</td><td>可训练的 reward 信号 + 轨迹数据集</td><td>可复现的实验报告 + 证据链 + 图谱</td><td><strong>verifier + 留痕要借</strong>，训练侧不借</td></tr>
+    <tr><td>失败代价</td><td>污染一批 rollout，浪费 GPU 小时</td><td>污染一次 demo，答不出老师的问题</td><td>都指向「状态干净 + 可重跑」</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2 id="landscape">3. Landscape：四张表</h2>
+
+<p>四张表按「环境长什么样」分组，而不是按论文时间。每行最后一句是<b>「对我们有用的一条」</b>——只写能落到 pj01 里的，不写「值得学习」这种空话。<span class="pill">许可/隔离技术列</span> 若来源未明确，标注「未核实」。</p>
+
+<h3>3.1 OS / 桌面 / Web / 企业工作流 / 对话型环境</h3>
+
+<div class="tablewrap">
+<table>
+  <caption>表 1：computer-use 与 web agent 环境。共同点：<b>状态型环境 + 基于最终状态的 evaluator</b>。</caption>
+  <thead>
+    <tr><th>项目</th><th>类型</th><th>隔离技术</th><th>关键能力</th><th>开源/许可</th><th>对我们有用的一条</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="https://github.com/xlang-ai/OSWorld">OSWorld</a></td>
+      <td>桌面 OS 基准（369 任务，Ubuntu/Win/macOS）</td>
+      <td>VMware / VirtualBox / Docker / AWS / Modal / Daytona 可切换</td>
+      <td>快照与 reset、并行执行、多模态观测、函数式 evaluator、轨迹与录屏</td>
+      <td>Apache-2.0（据二手整理，未逐一核实）</td>
+      <td><b>「provider 可插拔」</b>：同一套任务跑在本机 Docker 或云上——我们照抄这个抽象，只是实现里只有 Docker 一种。</td>
+    </tr>
+    <tr>
+      <td><a href="https://github.com/microsoft/WindowsAgentArena">WindowsAgentArena</a></td>
+      <td>Windows 原生应用基准</td>
+      <td>Azure VM（并行）</td>
+      <td>并行 VM、可重置快照、结果可复算</td>
+      <td>MIT（未核实）</td>
+      <td><b>「并行」是加速评测的手段而非目的</b>：它靠多 VM 把数小时压到 1 小时内；我们靠 3 个条件并行即可。</td>
+    </tr>
+    <tr>
+      <td><a href="https://github.com/google-research/android_world">AndroidWorld</a></td>
+      <td>移动 OS 动态基准（116 任务）</td>
+      <td>Android 模拟器（AVD，可 laptop 上跑）</td>
+      <td>参数化任务随机化、<b>基于系统状态的 evaluator</b>（查 SQLite 行）、确定性 reset</td>
+      <td>Apache-2.0（未核实）</td>
+      <td><b>「查数据库行」式评分</b>：我们的 11 道 QA 也应该落成对 <code>_test</code> 库里节点/边的断言，而不是人眼看输出。</td>
+    </tr>
+    <tr>
+      <td><a href="https://github.com/web-arena-x/webarena">WebArena</a> / <a href="https://github.com/ServiceNow/BrowserGym">BrowserGym</a></td>
+      <td>自托管网站 + 统一 web 交互接口</td>
+      <td>Docker 化自托管站点（容器内本地服务）</td>
+      <td>统一 <code>step/validate</code> 契约、任务级 reward、可扩展 benchmark 注册</td>
+      <td>Apache-2.0（未核实）</td>
+      <td><b>统一 step 契约</b>：把「ingest / retrieve / answer」都做成同一种可记录的 step，轨迹才有统一 schema。</td>
+    </tr>
+    <tr>
+      <td><a href="https://github.com/ServiceNow/WorkArena">WorkArena</a></td>
+      <td>企业软件（ServiceNow）知识工作任务</td>
+      <td>云实例 + BrowserGym</td>
+      <td>真实企业 UI、任务集冻结、可复算</td>
+      <td>Apache-2.0（未核实）</td>
+      <td><b>「任务集冻结」</b>：11 道 QA 的题面与金标一旦定版就 hash 冻结，改题必须升版本号。</td>
+    </tr>
+    <tr>
+      <td><a href="https://github.com/TheAgentCompany/TheAgentCompany">TheAgentCompany</a></td>
+      <td>模拟公司（多角色协作、长程任务）</td>
+      <td>Docker 化内部服务（GitLab/Plane/RocketChat 等）</td>
+      <td>长程任务 + <b>细粒度 checkpoint evaluator</b>（子任务级）</td>
+      <td>MIT（未核实）</td>
+      <td><b>子任务级 checkpoint</b>：把「找到文件 → 抽取实体 → 连边 → 引用」拆成可分别判定的 checkpoint，失败可定位。</td>
+    </tr>
+    <tr>
+      <td><a href="https://github.com/sierra-research/tau2-bench">τ-bench / τ²-bench</a></td>
+      <td>对话式工具使用（航空/零售/电信）</td>
+      <td>无 OS 隔离，纯程序化领域环境 + 用户模拟器</td>
+      <td>冻结题集、pass^k 可靠性、状态化 DB、LLM 用户模拟</td>
+      <td>MIT（未核实）</td>
+      <td><b>pass^k 而不是 pass@1</b>：11 道题太少，用「同题重复 k 次全对」来衡量稳定性，比单次准确率诚实得多。</td>
+    </tr>
+    <tr>
+      <td><a href="https://github.com/THUDM/AgentBench">AgentBench</a></td>
+      <td>多环境综合基准（OS/DB/KG/游戏/网页）</td>
+      <td>Docker 容器（每环境一容器）</td>
+      <td>多环境统一接口、并发评测、KG 环境</td>
+      <td>Apache-2.0（未核实）</td>
+      <td><b>「每环境一容器」的最早实践</b>：正好对应我们的「每语料一容器」。</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h3>3.2 代码 / SWE 沙箱与自托管 runtime</h3>
+
+<div class="tablewrap">
+<table>
+  <caption>表 2：代码执行类。它们贡献了「快照/重置 + 并行 + 验证」的工程细节，也是 microVM 讨论的主战场。</caption>
+  <thead>
+    <tr><th>项目</th><th>类型</th><th>隔离技术</th><th>关键能力</th><th>开源/许可</th><th>对我们有用的一条</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="https://github.com/SWE-bench/SWE-bench">SWE-bench</a></td>
+      <td>真实 issue → patch 基准</td>
+      <td>每实例一个 Docker 镜像（repo + 依赖固定）</td>
+      <td>Fail-to-Pass / Pass-to-Pass 测试作为 verifier</td>
+      <td>MIT（未核实）</td>
+      <td><b>「测试即 verifier」</b>：我们对应的是「引用存在性 / 项目归属 / 版本链」三类断言脚本。</td>
+    </tr>
+    <tr>
+      <td><a href="https://github.com/SWE-Gym/SWE-Gym">SWE-Gym</a></td>
+      <td>可训练环境 + 轨迹数据集（491 条起）</td>
+      <td>Docker（每 repo 一镜像）</td>
+      <td>环境构建流水线、成功轨迹筛选</td>
+      <td>Apache-2.0（未核实）</td>
+      <td><b>「环境构建」本身要写成脚本</b>，不是手工敲命令——否则第二次跑就不一样。</td>
+    </tr>
+    <tr>
+      <td><a href="https://github.com/SWE-bench/SWE-smith">SWE-smith</a></td>
+      <td>任务合成（往 repo 里注入 bug）</td>
+      <td>Docker；repo 在容器内可反复注入</td>
+      <td>规模化任务生成、无需额外人工</td>
+      <td>MIT（未核实）</td>
+      <td><b>「环境就绪后，任务可以批量生成」</b>：语料固定后，QA 可以从图谱反向合成（同义问法/反事实问法）。</td>
+    </tr>
+    <tr>
+      <td><a href="https://github.com/R2E-Gym/R2E-Gym">R2E-Gym</a></td>
+      <td>可执行环境 + RL 训练脚手架</td>
+      <td>Docker → K8s（512 并发时单机 daemon 崩）</td>
+      <td>四工具 agent scaffold、F2P 测试、轨迹</td>
+      <td>Apache-2.0（未核实）</td>
+      <td><b>「单机 Docker 的并发上限是真实的」</b>：我们的上限是 3–11 个容器，安全；但别在 CI 里开 100 个。</td>
+    </tr>
+    <tr>
+      <td><a href="https://docs.openhands.dev/sdk/guides/agent-server/docker-sandbox">OpenHands runtime</a></td>
+      <td>agent 运行时（沙箱 provider 抽象）</td>
+      <td>Docker（默认）/ 远程 runtime</td>
+      <td>每会话一容器、<code>SANDBOX_VOLUMES</code> 控制挂载、workspace 持久化</td>
+      <td>MIT（未核实）</td>
+      <td><b>「挂载点是配置项」</b>：<code>host:container:ro|rw</code> 的显式声明，正是我们要抄的那一行。</td>
+    </tr>
+    <tr>
+      <td><a href="https://firecracker-microvm.github.io/">Firecracker</a></td>
+      <td>microVM（AWS 出品）</td>
+      <td>KVM 硬件隔离，独立 guest 内核</td>
+      <td>~100–200 ms 启动、&lt;5 MiB 内存开销、每宿主可达 150 创建/秒</td>
+      <td>Apache-2.0</td>
+      <td><b>不要借</b>：我们没有不可信多租户，也没有冷启动预算。</td>
+    </tr>
+    <tr>
+      <td><a href="https://gvisor.dev/">gVisor</a> / <a href="https://katacontainers.io/">Kata Containers</a></td>
+      <td>强隔离容器运行时</td>
+      <td>用户态内核（gVisor）/ microVM 包装成容器（Kata）</td>
+      <td>syscall 面收敛 / K8s 原生 RuntimeClass</td>
+      <td>Apache-2.0</td>
+      <td><b>不要借</b>：运维成本 &gt; 收益。若真要跑「agent 生成的代码」，再考虑。</td>
+    </tr>
+    <tr>
+      <td><a href="https://e2b.dev/">E2B</a></td>
+      <td>托管代码沙箱 API</td>
+      <td>Firecracker microVM（官方口径）</td>
+      <td>按秒计费、SDK 起沙箱、快照/暂停恢复、模板镜像</td>
+      <td>商业 SaaS（SDK 开源，未核实具体许可）</td>
+      <td><b>借「模板 + 快照」概念，不借服务</b>：把「环境就绪态」做成一个镜像 tag，就是穷人的模板。</td>
+    </tr>
+    <tr>
+      <td><a href="https://www.daytona.io/">Daytona</a></td>
+      <td>托管开发环境 / 沙箱</td>
+      <td>Docker（云）/ 自托管</td>
+      <td>workspace 生命周期、快照、API 优先</td>
+      <td>商业 SaaS + 部分开源自托管</td>
+      <td><b>「workspace 是一等公民」</b>：我们的 <code>/workspace</code> 也应该是显式命名、可列举、可丢弃的对象。</td>
+    </tr>
+    <tr>
+      <td><a href="https://modal.com/docs/guide/sandbox">Modal Sandboxes</a></td>
+      <td>Serverless 沙箱</td>
+      <td>gVisor 或 VM runtime（官方称可选）</td>
+      <td>按秒计费、文件系统快照、与 GPU 函数同栈</td>
+      <td>商业 SaaS</td>
+      <td><b>「快照 + 恢复」用于长任务</b>：期末若要跑 1000 文件，可中断续跑；但我们用 wave 目录就够。</td>
+    </tr>
+    <tr>
+      <td><a href="https://www.runloop.ai/">Runloop</a> / <a href="https://www.morph.so/">Morph</a> / <a href="https://codesandbox.io/">CodeSandbox SDK</a></td>
+      <td>托管沙箱（devbox / 快照 / 分支）</td>
+      <td>多为 Firecracker/Docker 之上封装</td>
+      <td>快照、fork、持久 devbox、并发配额</td>
+      <td>商业 SaaS</td>
+      <td><b>「fork 环境」</b>：对应我们的「同一语料、3 个条件并行」——但要自己用 <code>--tmpfs</code> 实现，不开账号。</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h3>3.3 数据与环境生成 / 训练框架</h3>
+
+<div class="tablewrap">
+<table>
+  <caption>表 3：这一类的关键词是「环境即数据」，与我们关系最弱，但它们的 <b>step 接口</b> 值得抄。</caption>
+  <thead>
+    <tr><th>项目</th><th>类型</th><th>隔离技术</th><th>关键能力</th><th>开源/许可</th><th>对我们有用的一条</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="https://github.com/WooooDyy/AgentGym">AgentGym</a></td>
+      <td>统一平台：14 环境 / 89 任务类 + 轨迹集</td>
+      <td>每环境一服务，HTTP 接口</td>
+      <td><code>/createEnv /reset /step /observation</code> 无状态并发接口、跨环境训练</td>
+      <td>开源（许可未核实）</td>
+      <td><b>五个 HTTP 端点</b>：把我们的 ingest/retrieve/answer 包成同样五个端点，评测脚本就能复用。</td>
+    </tr>
+    <tr>
+      <td><a href="https://arxiv.org/abs/2404.11364">AgentOhana</a></td>
+      <td>统一数据 + 训练流水线</td>
+      <td>无（离线数据）</td>
+      <td>异构轨迹 → 统一多轮格式、均衡采样</td>
+      <td>论文（代码后续开源）</td>
+      <td><b>轨迹 schema 先行</b>：先定 <code>trace.jsonl</code> 字段，再写 pipeline。</td>
+    </tr>
+    <tr>
+      <td>WebRL</td>
+      <td>web agent 自进化 RL（课程式）</td>
+      <td>自托管 web 环境</td>
+      <td>ORM 打分、KL 约束、任务课程</td>
+      <td>论文（许可未核实）</td>
+      <td><b>不要借</b>（需要训练）。</td>
+    </tr>
+    <tr>
+      <td><a href="https://github.com/tsinghua-fib-lab/OS-Genesis">OS-Genesis</a></td>
+      <td>反向任务合成（先探索后生成任务）</td>
+      <td>桌面 VM</td>
+      <td>自动生成可验证任务 + 轨迹</td>
+      <td>开源（许可未核实）</td>
+      <td><b>「先探索再出题」</b>：可以让 agent 先在语料里走一遍，再据此设计 QA——正是我们 11 道题的来源方法论。</td>
+    </tr>
+    <tr>
+      <td><a href="https://github.com/THUDM/Android-Lab">AndroidLab</a></td>
+      <td>Android 环境 + 操作框架</td>
+      <td>模拟器</td>
+      <td>确定性操作、批量评测</td>
+      <td>开源（许可未核实）</td>
+      <td>参考价值低（不同模态）。</td>
+    </tr>
+    <tr>
+      <td><a href="https://github.com/NovaSky-AI/SkyRL">SkyRL</a></td>
+      <td>全栈 RL 训练库（含 SkyRL-Gym）</td>
+      <td>容器 / 远程环境</td>
+      <td>多轮 agent 训练、环境 Gym 化</td>
+      <td>Apache-2.0（未核实）</td>
+      <td><b>不要借</b>（无 GPU 训练）。但它的「环境 Gym 化」接口值得看一眼。</td>
+    </tr>
+    <tr>
+      <td><a href="https://github.com/PrimeIntellect-ai/verifiers">Verifiers</a></td>
+      <td>RL 环境库（环境即 Python 包）</td>
+      <td>环境自管（多为容器/子进程）</td>
+      <td>rollout 数据模型（prompt/completion/answer/state/info）、rubric &amp; parser</td>
+      <td>开源（MIT，未核实）</td>
+      <td><b>「环境是一个可安装的包」</b>：我们的 <code>poc/envs/victoria/</code> 也应该能被 <code>python -m</code> 直接跑起来。</td>
+    </tr>
+    <tr>
+      <td><a href="https://docs.eigenai.com/products/eigendata-cli/datasets/mcp-mark/overview">mcpmark（EigenData filesystem worlds）</a></td>
+      <td>MCP 工具使用基准：合成文件系统 + GitHub 世界</td>
+      <td>每 world 自带初始状态，<b>完全离线可跑</b></td>
+      <td>95 个自包含 world / 1233 任务、确定性 Python verifier、每任务带参考轨迹</td>
+      <td>数据 CC-BY-NC-ND-4.0（数据集卡）+ 代码开源</td>
+      <td><b>结构上最接近我们</b>：<code>world/</code>（初始文件树）+ <code>tasks/*/task.json</code> + <code>verification/verify.py</code> + <code>trajectory.json</code>。这四件套直接抄。<span class="pill">高价值</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h3>3.4 个人文件系统：把 PC 当「任务环境」</h3>
+
+<div class="tablewrap">
+<table>
+  <caption>表 4：这一组是<b>任务环境</b>，不是训练基建。它们定义「什么样的 PC 文件树值得评测」，我们借鉴的是<b>任务与评测的设置</b>。</caption>
+  <thead>
+    <tr><th>项目</th><th>类型</th><th>隔离技术</th><th>关键能力</th><th>开源/许可</th><th>对我们有用的一条</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="https://github.com/synvo-ai/HippoCamp">HippoCamp</a>（我们的数据集）</td>
+      <td>真实个人电脑文件系统上的记忆/检索基准（581 QA 全量）</td>
+      <td>官方提供 Docker 镜像 + 终端 agent 单题模式（<code>--question --log-json</code>）</td>
+      <td>raw file tree、问答 + 证据 + 诊断标注、可选 gold parsed text</td>
+      <td><b>HippoCamp Research License v1.0</b>：限非商业研究、benchmark/eval；原始文件不可再分发</td>
+      <td><b>「默认设置下只给 raw tree」</b>：官方 README 明确要求在默认端到端设置中隐藏 JSON 标注、gold 文本、viewer parquet，直到评测结束。→ 我们的容器也必须只挂 raw tree。</td>
+    </tr>
+    <tr>
+      <td><a href="https://huggingface.co/datasets/supermemory/xAFS">xAFS</a>（Agentic File System）</td>
+      <td>13 个合成 persona 文件树（5 → ~10K 文件）</td>
+      <td>无（数据集）</td>
+      <td>跨格式检索、单跳/多跳、按「答对所需 token 数」计分</td>
+      <td>CC-BY-4.0（需署名）；由记忆产品厂商出品，属次级基准</td>
+      <td><b>「文件数量作为难度旋钮」</b>：5 / 137 / 1000 文件三档，正好是我们成本表的两档 + 一个 sanity 档。</td>
+    </tr>
+    <tr>
+      <td><a href="https://github.com/Synvo-ai/FileGram">FileGram</a></td>
+      <td>文件系统行为轨迹 → 个性化记忆</td>
+      <td>无（模拟数据引擎）</td>
+      <td>persona 驱动的操作轨迹生成、4 类评测轨道、4600+ QA</td>
+      <td>开源（许可未核实）</td>
+      <td><b>「行为轨迹本身是标注」</b>：文件的创建时间/修改顺序/移动路径可以成为图谱的边——这是我们要补的标注层。</td>
+    </tr>
+    <tr>
+      <td>Personal Agent Bench（个人 agent 基准族）</td>
+      <td>个人助理任务（跨应用、跨文件）</td>
+      <td>多为 Docker / 模拟应用</td>
+      <td>任务级验证</td>
+      <td>未核实（本次调研未拿到稳定官方入口）</td>
+      <td>暂不依赖；列在此处以标明我们调研过。</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h2 id="arch">4. 架构模式图与「我们只要哪几个框」</h2>
+
+<figure class="figure">
+<svg viewBox="0 0 1060 470" role="img" aria-label="Agent 沙箱基础设施架构模式：调度器、沙箱池、任务环境、Agent harness、verifier、轨迹存储">
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" style="fill:var(--muted)"/>
+    </marker>
+    <marker id="ah-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" style="fill:var(--accent)"/>
+    </marker>
+  </defs>
+
+  <!-- top row -->
+  <rect class="box-skip" x="14" y="52" width="156" height="86" rx="9"/>
+  <text class="svg-label" x="26" y="76">Scheduler</text>
+  <text class="svg-sub" x="26" y="94">题目 × 条件 × seed</text>
+  <text class="svg-sub" x="26" y="110">→ 任务队列 / 配额</text>
+  <text class="svg-badge-skip" x="26" y="129">✗ 11 道题不需要</text>
+
+  <rect class="box-need" x="202" y="52" width="176" height="86" rx="9"/>
+  <text class="svg-label" x="214" y="76">Sandbox pool</text>
+  <text class="svg-sub" x="214" y="94">镜像预热 / 并发 N</text>
+  <text class="svg-sub" x="214" y="110">一次性 or 复用</text>
+  <text class="svg-badge" x="214" y="129">✓ P0 = 一条 docker run</text>
+
+  <rect class="box-need" x="410" y="40" width="246" height="110" rx="9"/>
+  <text class="svg-label" x="422" y="64">Task env 任务环境</text>
+  <text class="svg-sub" x="422" y="84">/home/victoria 只读语料树</text>
+  <text class="svg-sub" x="422" y="100">/workspace 可写覆盖层</text>
+  <text class="svg-sub" x="422" y="116">固定时钟 · 网络策略</text>
+  <text class="svg-badge" x="422" y="137">✓ P0 核心</text>
+
+  <rect class="box-need" x="688" y="52" width="150" height="86" rx="9"/>
+  <text class="svg-label" x="700" y="76">Agent harness</text>
+  <text class="svg-sub" x="700" y="94">工具调用循环</text>
+  <text class="svg-sub" x="700" y="110">每步落盘</text>
+  <text class="svg-badge" x="700" y="129">✓ P0</text>
+
+  <rect class="box-need" x="870" y="52" width="176" height="86" rx="9"/>
+  <text class="svg-label" x="882" y="76">Verifier</text>
+  <text class="svg-sub" x="882" y="94">断言脚本 → 分数</text>
+  <text class="svg-sub" x="882" y="110">版本/项目/引用</text>
+  <text class="svg-badge" x="882" y="129">✓ P1</text>
+
+  <!-- env composition group -->
+  <rect class="group" x="14" y="196" width="642" height="112" rx="10"/>
+  <text class="svg-sub" x="26" y="216">Task env 的可组合声明（这才是「基础设施」的部分）</text>
+
+  <rect class="box" x="26" y="228" width="142" height="64" rx="7"/>
+  <text class="svg-sub" x="36" y="250">corpus 只读</text>
+  <text class="svg-sub" x="36" y="268">/home/victoria:ro</text>
+  <text class="svg-sub" x="36" y="284">内容 hash 进 manifest</text>
+
+  <rect class="box" x="180" y="228" width="142" height="64" rx="7"/>
+  <text class="svg-sub" x="190" y="250">workspace 可写</text>
+  <text class="svg-sub" x="190" y="268">tmpfs，一次性</text>
+  <text class="svg-sub" x="190" y="284">退出即丢弃</text>
+
+  <rect class="box" x="334" y="228" width="142" height="64" rx="7"/>
+  <text class="svg-sub" x="344" y="250">时钟 / mtime</text>
+  <text class="svg-sub" x="344" y="268">TZ 固定，mtime 归一</text>
+  <text class="svg-sub" x="344" y="284">SOURCE_DATE_EPOCH</text>
+
+  <rect class="box" x="488" y="228" width="156" height="64" rx="7"/>
+  <text class="svg-sub" x="498" y="250">网络策略</text>
+  <text class="svg-sub" x="498" y="268">--network none</text>
+  <text class="svg-sub" x="498" y="284">或 proxy 白名单</text>
+
+  <!-- store -->
+  <rect class="box-need" x="688" y="228" width="358" height="88" rx="9"/>
+  <text class="svg-label" x="700" y="252">Trajectory / artifact store</text>
+  <text class="svg-sub" x="700" y="272">trace.jsonl · evidence.json · report.md</text>
+  <text class="svg-sub" x="700" y="288">manifest.json（语料 hash / 镜像 digest / 代码 commit / 模型 id）</text>
+  <text class="svg-badge" x="700" y="307">✓ P1（性价比最高的一件事）</text>
+
+  <!-- arrows -->
+  <path class="arrow" d="M170 95 L198 95" marker-end="url(#ah)"/>
+  <path class="arrow" d="M378 95 L406 95" marker-end="url(#ah)"/>
+  <path class="arrow" d="M656 95 L684 95" marker-end="url(#ah)"/>
+  <path class="arrow" d="M838 95 L866 95" marker-end="url(#ah)"/>
+
+  <path class="arrow" d="M958 138 L958 224" marker-end="url(#ah)"/>
+  <path class="arrow" d="M763 138 L763 224" marker-end="url(#ah)"/>
+
+  <path class="arrow-accent" d="M700 316 L92 316 L92 142" marker-end="url(#ah-a)"/>
+  <text class="svg-badge" x="108" y="336">下一题 / 下一 wave（重置 = 重新 docker run）</text>
+
+  <!-- legend -->
+  <text class="svg-sub" x="14" y="400">图例：</text>
+  <rect class="box-need" x="60" y="388" width="26" height="14" rx="3"/>
+  <text class="svg-sub" x="94" y="400">我们需要的框</text>
+  <rect class="box-skip" x="220" y="388" width="26" height="14" rx="3"/>
+  <text class="svg-sub" x="254" y="400">明确不借</text>
+  <path class="arrow-accent" d="M400 395 L436 395" marker-end="url(#ah-a)"/>
+  <text class="svg-sub" x="444" y="400">重置/下一轮</text>
+
+  <text class="svg-sub" x="14" y="432">读法：左侧「谁决定跑什么」是控制面；中间「环境长什么样」是契约；右侧「怎么证明它对」是证据面。</text>
+  <text class="svg-sub" x="14" y="450">我们的全部基建 = 中间那个虚线框 + 右下那个目录，加上一条 docker run。</text>
+</svg>
+<figcaption>图 1：2025–2026 年 agent 环境基建的通用结构（依据 §3 中 OSWorld / AndroidWorld / AgentGym / mcpmark / GKE Agent Sandbox 等公开描述归纳）。<b>这是归纳图，不是任何单一项目的官方架构图。</b></figcaption>
+</figure>
+
+<h3>4.1 逐框说明：借什么、为什么</h3>
+
+<div class="tablewrap">
+<table>
+  <caption>表 5：六个框的取舍。<b>绿色 = 我们实现，虚线 = 不实现。</b></caption>
+  <thead><tr><th>框</th><th>在别人的系统里干什么</th><th>在我们这里对应什么</th><th>取舍</th></tr></thead>
+  <tbody>
+    <tr><td>Scheduler</td><td>把 (任务 × 采样 × seed) 排成队列，配额与重试，喂满沙箱池</td><td>一个 <code>Makefile</code> + <code>for</code> 循环（11 题 × 3 条件）</td><td><span class="tag p2">不借</span> 队列/配额/重试全都不需要</td></tr>
+    <tr><td>Sandbox pool</td><td>预热镜像、并发 N、复用与回收，把冷启动压到百毫秒</td><td><code>docker compose run --rm</code>，一次一个</td><td><span class="tag p0">简化借</span> 只借「一次性、跑完即删」的语义</td></tr>
+    <tr><td>Task env</td><td>只读输入 + 可写层 + 固定时钟 + 网络策略 + 资源上限</td><td><code>-v corpus:/home/victoria:ro</code> + <code>--tmpfs /workspace</code> + <code>TZ</code> + <code>--network none</code></td><td><span class="tag p0">全借</span> 这是我们唯一真正需要的框</td></tr>
+    <tr><td>Agent harness</td><td>工具调用循环、观测截断、每步记录</td><td>已有的 sci-rag-kit pipeline + 一个 <code>step_logger</code></td><td><span class="tag p0">借格式</span> 借「每步都写一行 JSONL」</td></tr>
+    <tr><td>Verifier</td><td>从环境最终状态算 reward</td><td>三类断言：引用存在 / 项目归属 / 版本链一致</td><td><span class="tag p1">借</span> 期中可以只有 3 条断言</td></tr>
+    <tr><td>Trajectory store</td><td>轨迹 + 产物 + 环境指纹，供训练与复盘</td><td><code>artifacts/runs/{run_id}/</code></td><td><span class="tag p0">全借</span> 成本最低、收益最高</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="note">
+<b>一句话总结图 1：</b>别人把「状态边界」写成了分布式系统；我们只需要把同一份状态边界写成一个命令行。图的形状不变，只是每个框里只剩下 1 个实例。
+</div>
+
+<h2 id="borrow">5. 可借用清单 P0 / P1 / P2</h2>
+
+<h3>5.1 P0：不做就无法声称「可复现」（期中 demo 前必须全绿）</h3>
+<ul class="checklist">
+  <li><b>每任务/每语料一个容器</b>——不是每次 ingest 一个进程。语料 = 环境，环境 = 容器。这样「语料版本」和「运行记录」天然一对多。</li>
+  <li><b>corpus 只读挂载</b>：<code>-v $PWD/corpus/Victoria_Subset:/home/victoria:ro</code>。只读是<b>防自己</b>：pipeline 里任何一次误写都会毁掉「同一份输入」的前提。</li>
+  <li><b>workspace 可写覆盖层</b>：<code>--tmpfs /workspace:rw,noexec,nosuid,size=2g</code>，退出即消失。要留下的东西显式写到 <code>/data</code>。</li>
+  <li><b>固定 mtime / 时区</b>：<code>TZ=Asia/Shanghai</code> + 构建期把语料 mtime 归一（<code>find … -exec touch -t 202001010000 {} +</code>），否则「按时间排序」「最近修改」类问答每次结果不同。</li>
+  <li><b>网络出口白名单或 <code>--network none</code></b>。我们的 pipeline 要调 LLM API，所以采用<b>两段式</b>：容器内 deterministic 部分 <code>--network none</code>；LLM 调用走 host 侧 proxy，并把 request/response 写进 <code>artifacts/llm/</code> 做 replay。这是从「在 proxy 网关处捕获推理、让黑盒应用可训练」这一思路借来的（见 §8 中 NeurIPS 2026 那条）。<span class="pill">推断性设计</span></li>
+  <li><b>产物与轨迹落盘</b>：<code>-v $PWD/artifacts/runs/$RUN_ID:/data:rw</code>，至少四个文件：<code>manifest.json</code>、<code>trace.jsonl</code>、<code>evidence.json</code>、<code>report.md</code>。</li>
+  <li><b>一次性 <code>_test</code> DB</b>：每次运行建 <code>graph_${RUN_ID}_test</code>，跑完不删（存档）但下次绝不复用。<code>_test</code> 后缀让「这只是实验库」在名字上就成立。</li>
+</ul>
+
+<h3>5.2 P1：让报告从「跑通了」升级到「可审计」（期末前）</h3>
+<ul class="checklist">
+  <li><b>快照 / 重置 → 把「增量摄入」做成 wave 序列</b>。不要真去实现快照 API，用<b>目录</b>当快照：<code>corpus/W0/</code>（原始 137 文件）→ <code>W1/</code>（+12 文件）→ <code>W2/</code>（改 3 个文件版本）→ <code>W3/</code>（删 2 个）。每个 wave 跑一次增量 ingest，第 4 次跑「全量重建」做对照。<b>这是整个报告里最有解释力的一张图</b>。</li>
+  <li><b>Verifier 钩子</b>（三类断言，正好对应我们图谱的三类边）：
+    <ul>
+      <li>版本断言：<code>file F 的 version v2 是否指向 v1，且 v1 仍在库</code>；</li>
+      <li>项目归属断言：<code>entity E 是否属于 project P，且 P 的成员集合闭包正确</code>；</li>
+      <li>引用断言：<code>答案里的每个 claim 是否有 ≥1 条 evidence 边指向真实存在的文件路径 + 行/页码</code>。</li>
+    </ul>
+    <b>引用断言是最值钱的一条</b>：它把「幻觉」变成可计算的失败率。</li>
+  <li><b>并行跑 11 道 QA 或 3 个条件</b>：<code>docker compose run --rm runner --condition graph</code>，三个终端或 <code>--scale</code>。注意 R2E-Gym 的教训：并发数是有限资源，11 个容器 ok，别在 CI 里开 100 个。</li>
+  <li><b>成本记账</b>：<code>manifest.json</code> 里记 <code>wall_clock_s</code>、<code>cpu_s</code>、<code>input_tokens</code>、<code>output_tokens</code>、<code>llm_cost_cny</code>。别人问「你这套要多少钱」时，答案应该来自文件而不是估算。</li>
+</ul>
+
+<h3>5.3 P2：明确<b>不要借</b>（并给出理由，避免答辩时被问住）</h3>
+
+<div class="tablewrap">
+<table>
+  <caption>表 6：「不借」清单。每条都给出<b>触发条件</b>——万一将来规模变了，知道什么时候该回来看。</caption>
+  <thead><tr><th>不借的东西</th><th>为什么现在不借</th><th>什么情况下才该回来看</th></tr></thead>
+  <tbody>
+    <tr><td>Firecracker / gVisor / Kata（microVM）</td><td>我们执行的是<b>自己的</b> pipeline 代码，不是模型生成的任意代码；没有多租户，没有不可信输入。Docker 的 namespace + cap-drop 足够。</td><td>如果开始让 agent 自由执行 shell / 装包，或把服务开放给同学提交任务。</td></tr>
+    <tr><td>Kubernetes / GKE Agent Sandbox</td><td>1–11 个容器的编排用 <code>docker compose</code> 就够；K8s 的固定成本（集群、镜像仓库、网络插件、YAML）远超收益。</td><td>并发 &gt; 50 且需要多机，或者要给别人提供「提交任务」的服务。</td></tr>
+    <tr><td>托管 sandbox API（E2B / Modal / Daytona / Runloop / Morph / CodeSandbox）</td><td>数据出境 + vendor lock-in + 语料许可不允许把 HippoCamp 原始文件传到第三方云；而且我们的成本里 sandbox 只占个位数百分比（见 §6）。</td><td>需要 GPU 侧联调，或本地机器彻底跑不动（例如要做 OCR/视频处理）。</td></tr>
+    <tr><td>RL rollout 调度 / reward model / GRPO</td><td>没有训练，就没有 rollout。11 道题做 RL 在统计上没有意义（reward 方差 &gt; 信号）。</td><td>不适用（本项目定位是系统与检索，不是训练）。</td></tr>
+    <tr><td>环境生成器（EnvScaler / OS-Genesis / SWE-smith 式任务合成）</td><td>我们只有 1 个人工样本，题目应当<b>手工可控</b>；合成题会让「11 道题」的解释力更弱。</td><td>要扩展到 100+ 个 PC 样本时。</td></tr>
+    <tr><td>BrowserGym / OSWorld 那套 GUI 控制栈</td><td>我们的 agent 操作的是文件与图谱 API，不是像素。</td><td>如果要做「真的点鼠标找文件」的 demo。</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2 id="design">6. 最小设计：可直接抄的目录与命令</h2>
+
+<h3>6.1 目录布局</h3>
+
+<pre><code>pj01/
+├── corpus/                          # 只读输入，永不写、永不提交
+│   └── Victoria_Subset/             # 137 files / 174 entries / 6 层深 / 10 格式 / 4 模态
+├── docker/
+│   ├── Dockerfile                   # python + 依赖 + 语料指纹工具（不含语料本身）
+│   ├── compose.yaml
+│   ├── entrypoint.sh                # 校验语料只读、归一 mtime、写 manifest
+│   └── llm-proxy/                   # host 侧代理：转发 + 记录 request/response（可选）
+├── poc/                             # sci-rag-kit 之上的 pipeline
+│   ├── ingest.py  graph.py  retrieve.py  answer.py
+│   ├── envs/victoria/               # 「环境即包」：world + tasks + verifier
+│   │   ├── world/                   # → 挂到 /home/victoria（ro）
+│   │   ├── tasks/qa_11.json         # 冻结的 11 道题（含 hash）
+│   │   └── verify.py                # 三类断言
+│   └── trace.py                     # step logger → trace.jsonl
+├── artifacts/                       # 唯一的输出根，全部 gitignore
+│   └── runs/2026-10-25T14-03__graph__seed0/
+│       ├── manifest.json            # 指纹：语料 hash / 镜像 digest / commit / 模型 id / prompt hash
+│       ├── trace.jsonl              # 每步一行
+│       ├── evidence.json            # 答案 → 证据路径
+│       ├── report.md
+│       └── db/                      # _test 库快照（dump）
+└── Makefile                         # make run CONDITION=graph SEED=0</code></pre>
+
+<p><b>硬规则（写进 README，不写进「注意事项」）：</b></p>
+<ul>
+  <li><b>永不挂 <code>$HOME</code></b>。个人文件系统是数据集，不是你的家目录；一次 <code>rm -rf</code> 就没了。</li>
+  <li><b>永不挂 <code>/var/run/docker.sock</code></b>。挂了等于把宿主机 root 交给容器内的任何代码。</li>
+  <li><b>永不 <code>--privileged</code></b>，永不 <code>--network host</code>。</li>
+  <li><b>语料只读</b>；需要修改就复制到 <code>/workspace</code> 再改。</li>
+  <li><b>镜像里不放语料、不放密钥</b>：语料走挂载，密钥走运行时 env。</li>
+  <li><b>镜像按 digest 固定</b>（<code>image@sha256:…</code>），不用 <code>latest</code>。</li>
+</ul>
+
+<h3>6.2 期中 demo 的最小版：一条 <code>docker run</code></h3>
+
+<pre><code># 一次性运行：只读语料 + tmpfs 工作区 + 无网络 + 非 root + 无 capability
+RUN_ID=$(date +%Y%m%dT%H%M%S)__graph__seed0
+mkdir -p "artifacts/runs/$RUN_ID"
+
+docker run --rm \
+  --name "pcmem-$RUN_ID" \
+  --user 1000:1000 \
+  --read-only \
+  --tmpfs /tmp:rw,noexec,nosuid,size=256m \
+  --tmpfs /workspace:rw,noexec,nosuid,size=2g \
+  --cap-drop ALL \
+  --security-opt no-new-privileges \
+  --pids-limit 256 \
+  --memory 2g --cpus 2 \
+  --network none \
+  -e TZ=Asia/Shanghai \
+  -e RUN_ID="$RUN_ID" \
+  -e CONDITION=graph \
+  -e SEED=0 \
+  -v "$PWD/corpus/Victoria_Subset:/home/victoria:ro" \
+  -v "$PWD/artifacts/runs/$RUN_ID:/data:rw" \
+  pcmem/pj01@sha256:PUT_YOUR_DIGEST_HERE \
+  python -m poc.run --condition graph --seed 0</code></pre>
+
+<div class="warnbox">
+<b>矛盾点必须显式处理（别在答辩时被问倒）：</b><code>--network none</code> 与「调用 LLM API」互斥。
+两种合法解法：<b>(a)</b> 容器内只做 deterministic 部分，LLM 调用通过 <code>--add-host</code>/proxy 走 host 侧白名单代理，并把问答对落到 <code>artifacts/llm/</code>，重跑时优先 replay；<b>(b)</b> 准备一组缓存的 fixture 响应，做「离线可复现模式」。
+<b>推荐 (a)+(b) 同时有</b>：默认离线 replay 出确定性结果，另跑一遍在线模式验证「换一个模型会怎样」。
+</div>
+
+<h3>6.3 期末的加强版：<code>docker compose</code> + 3 个条件 + 4 个 wave</h3>
+
+<pre><code># docker/compose.yaml
+services:
+  runner:
+    image: pcmem/pj01@sha256:...        # 固定 digest
+    user: "1000:1000"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 256
+    mem_limit: 2g
+    cpus: 2
+    environment:
+      TZ: Asia/Shanghai
+      CONDITION: ${CONDITION:-graph}     # baseline | graph | graph_refresh
+      WAVE: ${WAVE:-W0}                  # W0 | W1 | W2 | W3
+      SEED: ${SEED:-0}
+      LLM_BASE_URL: http://llm-proxy:8080/v1   # 只此一个出口
+    volumes:
+      - ../corpus/${WAVE}:/home/victoria:ro
+      - ../artifacts/runs/${RUN_ID}:/data:rw
+    tmpfs:
+      - /workspace:rw,noexec,nosuid,size=2g
+      - /tmp:rw,noexec,nosuid,size=256m
+    networks: [egress]
+    depends_on: [llm-proxy]
+
+  llm-proxy:                            # 唯一有外网的容器；记录一切
+    image: pcmem/llm-proxy@sha256:...
+    environment:
+      ALLOW_HOSTS: api.your-llm-provider.com
+      LOG_DIR: /data/llm
+    volumes:
+      - ../artifacts/runs/${RUN_ID}:/data:rw
+    networks: [egress, outside]
+
+  verifier:                             # 只读产物，不改产物
+    image: pcmem/pj01@sha256:...
+    user: "1000:1000"
+    read_only: true
+    network_mode: none
+    volumes:
+      - ../corpus/${WAVE}:/home/victoria:ro
+      - ../artifacts/runs/${RUN_ID}:/data:ro
+    command: python -m poc.envs.victoria.verify --run /data
+
+networks:
+  egress:
+    internal: true                      # 无默认路由
+  outside: {}</code></pre>
+
+<pre><code># Makefile 目标（期末版）
+make run CONDITION=baseline       WAVE=W0 SEED=0
+make run CONDITION=graph          WAVE=W0 SEED=0
+make run CONDITION=graph_refresh  WAVE=W3 SEED=0    # 与 W0 对比，检验增量刷新
+make matrix                       # 11 题 × 3 条件 × 2 seed，串行但可中断
+make verify RUN_ID=...            # 只跑 verifier
+make report RUN_ID=...            # 渲染 artifacts/runs/.../report.md</code></pre>
+
+<h3>6.4 期中 vs 期末：范围对照</h3>
+
+<div class="tablewrap">
+<table>
+  <caption>表 7：两次交付的最小充分集。<b>不要把期末的东西塞进期中</b>。</caption>
+  <thead><tr><th>能力</th><th>期中 demo（最小版）</th><th>期末（加强版）</th></tr></thead>
+  <tbody>
+    <tr><td>隔离</td><td>1 容器，只读语料 + tmpfs + <code>--network none</code> + cap-drop</td><td>compose 3 服务，egress 网络 <code>internal: true</code> + proxy 白名单</td></tr>
+    <tr><td>条件</td><td>1 个（graph）</td><td>3 个（baseline / graph / graph_refresh）</td></tr>
+    <tr><td>时间维度</td><td>无</td><td>4 个 wave（W0–W3）+ 全量重建对照</td></tr>
+    <tr><td>评分</td><td>1 条引用断言（证据路径必须存在）</td><td>3 类断言 + pass^k（同题 3 次全对率）</td></tr>
+    <tr><td>留痕</td><td><code>trace.jsonl</code> + <code>report.md</code></td><td>+ <code>manifest.json</code> 指纹 + <code>evidence.json</code> + 成本字段</td></tr>
+    <tr><td>并行</td><td>无（11 题串行，几分钟）</td><td>3 个条件并行</td></tr>
+    <tr><td>DB</td><td><code>graph_${RUN_ID}_test</code></td><td>同上 + 每 wave 一个 schema 版本号</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2 id="cost">7. 成本与时间量级</h2>
+
+<div class="badbox">
+<b>先说道歉：</b>下面的数字是<b>量级估算</b>，不是报价。所有单价来自 2026 年 11 月检索到的公开页面（含第三方汇总），未逐条打开官方计费页核对；云厂商促销价每周变化。<b>请把区间当「数量级」，不要当预算表。</b>
+</div>
+
+<h3>7.1 假设（写清楚，才能被质疑）</h3>
+<ul>
+  <li>单次运行 = 解析 137 文件（无 OCR、无视频抽帧）+ 建图 + 11 道 QA 检索与作答。</li>
+  <li>语料体量按 137 文件 ≈ 150–300 MB 估（含图片/音频）；1000 文件按线性放大 7×，但我给 3× 的宽放，因为固定开销（模型加载、依赖导入）不随文件数增长。</li>
+  <li>CPU 侧：本地 embedding（小模型，CPU 推理）约 50–200 chunk/s；PDF/Office 解析是主要 CPU 消耗。</li>
+  <li>笔记本整机功耗按 40–60 W 计，电价 0.6 元/kWh。</li>
+  <li>云主机：阿里云 2 vCPU / 4 GiB 按量付费约 <b>0.33–0.39 元/小时</b>（多个 2026 年页面给出的区间；实际以控制台为准）。</li>
+  <li>托管 sandbox：按 2 vCPU / 2 GiB 计，E2B 级单价约 $0.0504/vCPU·h + $0.0162/GiB·h → 约 <b>0.9–1.0 元/小时</b>；Modal 级约 <b>1.3–1.4 元/小时</b>（第三方计算器汇总，币种按 1 USD ≈ 7.2 CNY）。</li>
+  <li>LLM 调用：按每题 3 次检索-作答循环、约 40–80k tokens 往返估。</li>
+</ul>
+
+<h3>7.2 两档规模的成本量级</h3>
+
+<div class="tablewrap">
+<table>
+  <caption>表 8：一次完整运行（ingest → graph → 11 题 QA）的量级。◆ = 主导项。</caption>
+  <thead>
+    <tr><th>场景</th><th>墙钟时间</th><th>CPU 小时</th><th>本机（电费）</th><th>阿里云 2C4G 按量</th><th>托管 sandbox（E2B 级）</th><th>LLM API</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>137 文件 · 单次</td>
+      <td>5–15 min</td>
+      <td>0.15–0.5</td>
+      <td>&lt; 0.05 元</td>
+      <td>0.05–0.10 元</td>
+      <td>0.15–0.5 元</td>
+      <td><b>20–60 元</b> ◆</td>
+    </tr>
+    <tr>
+      <td>137 文件 · 完整矩阵（3 条件 × 2 seed = 6 次）</td>
+      <td>0.5–1.5 h</td>
+      <td>1–3</td>
+      <td>&lt; 0.2 元</td>
+      <td>0.3–0.6 元</td>
+      <td>1–3 元</td>
+      <td><b>120–360 元</b> ◆</td>
+    </tr>
+    <tr>
+      <td>1000 文件 · 单次</td>
+      <td>30–90 min</td>
+      <td>0.7–2.5</td>
+      <td>&lt; 0.2 元</td>
+      <td>0.25–1.0 元</td>
+      <td>0.7–2.5 元</td>
+      <td><b>40–120 元</b> ◆</td>
+    </tr>
+    <tr>
+      <td>1000 文件 · 4 wave 增量 + 1 次全量重建</td>
+      <td>2–5 h</td>
+      <td>3–10</td>
+      <td>&lt; 0.5 元</td>
+      <td>1–2 元</td>
+      <td>3–10 元</td>
+      <td><b>200–600 元</b> ◆</td>
+    </tr>
+    <tr>
+      <td>租一台 2C4G 常驻一整天（反复调试）</td>
+      <td>24 h</td>
+      <td>24</td>
+      <td>—</td>
+      <td><b>8–9.5 元</b></td>
+      <td>~22–34 元</td>
+      <td>按调用量另计</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="warnbox">
+<b>父会话校正（按仓库实测 token）：</b>本仓库 <code>docs/benchmark-catalogue.md</code> 的实测口径是每次 question-run ≈ <b>1,545 input + 600 output tokens</b>（<code>--sources 5</code>）。按这个口径，11 题 × 3 条件 ≈ 7 万 tokens，Victoria_Subset 的 LLM API 约 <b>¥3–8</b>（其中建图占大头），不是 20–60 元；上表的 20–60 是「每题 40–80k tokens 的重上下文」上限，留作悲观预算。计算侧：16C32G 按量约 ¥1–3/h，2 小时 ¥2–6；2C4G 够跑编排但 embedding 慢，不建议作为主配置。
+</div>
+
+<h3>7.3 三条结论</h3>
+<ol>
+  <li><b>沙箱成本是四舍五入误差，token 成本才是主项。</b>单次 137 文件运行：算力 0.05–6 元（2C4G 到 16C32G），LLM 3–8 元（悲观上限 20–60），仍高一个量级。<span class="pill">推断（基于上表假设的算术）</span> 所以<b>不要为了省算力去优化沙箱</b>；要为了「少跑无效实验」去优化可复现性——每省下一次重跑，省的是 3–8 元（悲观 20–60）。</li>
+  <li><b>本机 vs 云主机：本机赢在边际成本，云主机赢在「环境一致」。</b>本机跑一次约等于零元，但「在我机器上能跑」不是可复现。云主机的真正价值不是算力，而是<b>一台干净的、可以整机重装的机器</b>——它把「环境漂移」这个变量消掉了。量级上：云主机一天 8–10 元，比一杯咖啡便宜。<span class="pill">推断</span></li>
+  <li><b>迭代次数决定该买什么。</b>一天跑 ≤5 次 → 本机；一天跑 10–50 次 → 租一台常驻云主机（包日/包月）；一天跑 &gt;200 次 → 才轮到按秒计费的托管 sandbox（那时你已经有并发需求了）。我们大概在第一种。<span class="pill">推断</span></li>
+</ol>
+
+<h2 id="limits">8. 边界：沙箱不保证什么</h2>
+
+<h3>8.1 沙箱只保证两件事</h3>
+<p><b>隔离</b>（这次运行碰不到别的）和<b>复现</b>（同样的输入 + 同样的镜像 → 同样的执行路径）。<b>它不产生任何语义。</b>特别地，它不会自动带来：</p>
+
+<div class="tablewrap">
+<table>
+  <caption>表 9：沙箱给不了的标注。这些必须我们自己造——也正好是本项目的学术贡献所在。</caption>
+  <thead><tr><th>我们需要的标注</th><th>沙箱给吗</th><th>真实来源</th><th>怎么补</th></tr></thead>
+  <tbody>
+    <tr><td><b>版本链</b>（同一文档的 v1→v2→v3）</td><td>不给。文件系统只有 mtime，没有「谁取代谁」</td><td>内容相似度 + 文件名模式 + 显式 diff 证据</td><td>建 <code>supersedes</code> 边，并在 verifier 里断言「v2 存在时 v1 不被当作 current」</td></tr>
+    <tr><td><b>项目归属</b>（文件 → 项目/客户/课程）</td><td>不给。目录结构只是弱信号</td><td>路径 + 共现 + 时间窗 + 内容实体</td><td>建 <code>belongs_to</code> 边，用「同项目文件的检索召回率」当指标</td></tr>
+    <tr><td><b>引用边</b>（答案 → 具体文件/页/行）</td><td>不给。容器只保证文件还在</td><td>检索打分 + 原文 span</td><td>每条 claim 强制带 <code>(path, locator)</code>，verifier 检查路径存在且 span 命中关键词</td></tr>
+    <tr><td><b>增量刷新</b>（新增文件后图谱如何变）</td><td>不给。tmpfs 一退全没</td><td>wave 序列 + 前后图谱 diff</td><td>每个 wave 存图谱 dump，期末报告核心图 = wave × (节点, 边, 错误率)</td></tr>
+    <tr><td><b>个人画像 / 偏好</b></td><td>不给。沙箱没有「用户」</td><td>行为轨迹（FileGram 的思路）</td><td>把 mtime 序列、目录移动、打开顺序当作弱标签</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>8.2 三个必须写进报告的风险</h3>
+<ol>
+  <li><b>许可：HippoCamp 是 research license，原始文件不可再分发。</b>HippoCamp Research License v1.0 的授权范围限定为「非商业研究、benchmark 与评测」，并且是「有限、非独占、不可转让、不可再许可、可撤销」的。<span class="pill">直接证据（LICENSE 原文摘要）</span> 实操后果：
+    <ul>
+      <li>语料<b>不进 git</b>、<b>不进镜像层</b>、<b>不进公开的 artifact 包</b>；只以挂载方式进入容器。</li>
+      <li>报告里贴文件片段要谨慎；贴路径树可以，贴内容要打码或只贴最小必要片段。</li>
+      <li>不把语料上传到任何托管 sandbox（那既是再分发，也是数据出境）。</li>
+    </ul>
+  </li>
+  <li><b>官方评测设置要求隐藏 gold。</b>HippoCamp README 明确：默认 raw-file 设置下，JSON 标注（题目/答案/证据/诊断）、<code>HippoCamp_Gold/</code>、viewer parquet 都<b>不应</b>暴露给被评测的 agent，应在评测结束后再解封。<span class="pill">直接证据</span> 工程后果：<b>gold 目录不能和 corpus 一起挂进同一个容器</b>——否则「只读挂载」也挡不住 agent 直接读答案。我们的做法：<code>corpus/</code>（agent 可见，ro）与 <code>gold/</code>（只挂给 verifier，ro）分离，两个容器两个挂载集。</li>
+  <li><b>托管 sandbox 的 vendor lock-in 与数据出境。</b>一旦把 pipeline 写成「调用某家的 sandbox SDK」，环境定义、快照格式、日志格式都绑定到该厂商；迁移成本落在最不该花时间的地方。加上语料是个人电脑文件（即便是合成 persona），出境涉及合规解释成本。<span class="pill">推断（基于许可条款与产品形态）</span></li>
+</ol>
+
+<h3>8.3 沙箱也治不好的复现性问题</h3>
+<ul class="kv">
+  <li><b>LLM 非确定性</b>：temperature=0 也不是 bitwise 确定（后端批处理、版本升级都会变）。→ 记录 <code>model_id</code> + <code>prompt_hash</code> + 响应缓存。</li>
+  <li><b>Embedding / 解析库版本漂移</b>：<code>torch</code>、<code>pdfplumber</code>、tokenizer 换小版本，向量就变。→ 镜像 digest 固定 + 在 manifest 里记 <code>pip freeze</code> 的 hash。</li>
+  <li><b>图谱构建顺序</b>：并发写图 → 边 id 不稳定。→ 单线程构建，或按 <code>(src, rel, dst)</code> 排序后落库。</li>
+  <li><b>时间依赖</b>：相对时间问句（「上周」「上个月」）在固定 <code>TZ</code> 之外还需要固定「now」。→ 注入 <code>FAKE_NOW</code> 环境变量，禁止代码里调 <code>datetime.now()</code>（用 lint 规则挡）。</li>
+</ul>
+
+<h2 id="sources">9. Sources</h2>
+
+<p class="kv">访问日期：<b>2026 年 10 月</b>（本报告写作会话内）。标注说明：<span class="kind off">官方</span> 官方仓库/文档/厂商博客；<span class="kind pap">论文</span> 会议/预印本/技术报告；<span class="kind inf">推断</span> 本报告作者的归纳或算术。<b>限制声明：</b>本次会话的正文抓取通道大量返回 HTTP 429，多数条目依据搜索索引返回的正文片段与摘要，未逐页打开核对；已在下方逐条标注可信度。</p>
+
+<h3>9.1 高可信（正文片段/官方原文可直接引用）</h3>
+<ol class="src">
+  <li><a href="https://huggingface.co/datasets/MMMem-org/HippoCamp/blob/main/LICENSE">HippoCamp Research License v1.0</a><span class="kind off">官方</span> — 授权范围（非商业研究/benchmark）、「不可再许可/可撤销」。本报告 §8.2 许可结论的直接依据。<span class="pill">片段核实</span></li>
+  <li><a href="https://github.com/synvo-ai/HippoCamp">synvo-ai/HippoCamp（GitHub）</a><span class="kind off">官方</span> — 官方 Docker 镜像 + 终端 agent 单题模式（<code>--question</code>、<code>--log-json</code>）；gold 需在评测后解封。<span class="pill">片段核实</span></li>
+  <li><a href="https://arxiv.org/html/2604.01221">HippoCamp: Benchmarking Contextual Agents on Personal Computers</a><span class="kind pap">论文</span> — 581 QA 全量、多模态 + 用户画像 + 文件系统三要素；任务分 factual retention 与 profiling。<span class="pill">片段核实</span></li>
+  <li><a href="https://cloud.google.com/blog/products/containers-kubernetes/accelerate-agentic-rl-with-gke-agent-sandbox">Google Cloud: Accelerating agentic RL with 45x faster GKE Agent Sandbox</a><span class="kind off">官方</span>（2026-09-29）— 「GPU 空转等 CPU 沙箱冷启动数分钟 / 数千次镜像拉取 / 调度积压」的原始表述，以及 45× 与 RL 编排 SDK 的官方声明。<span class="pill">厂商声明，未独立复现</span></li>
+  <li><a href="https://docs.eigenai.com/products/eigendata-cli/datasets/mcp-mark/overview">MCPMark Full Dataset（EigenData）</a><span class="kind off">官方</span> — 95 个自包含 world / 1233 任务、确定性 Python verifier、完全离线可跑。<b>结构与我们最接近，建议抄它的四件套。</b><span class="pill">片段核实</span></li>
+  <li><a href="https://docs.eigenai.com/products/eigendata-cli/datasets/mcp-mark/demo">MCPMark Demo Samples</a><span class="kind off">官方</span> — <code>world/</code> + <code>tasks/&lt;name&gt;/{task.json, verification/verify.py, trajectory.json}</code> 的目录范式（本报告 §6.1 的 <code>envs/victoria/</code> 直接照此）。<span class="pill">片段核实</span></li>
+  <li><a href="https://github.com/sierra-research/tau2-bench">sierra-research/tau2-bench</a><span class="kind off">官方</span> — 冻结题集（50 frozen tasks/domain）、pass^k 可靠性口径。<span class="pill">片段核实</span></li>
+  <li><a href="https://docs.openhands.dev/sdk/guides/agent-server/docker-sandbox">OpenHands: Docker Sandbox</a> / <a href="https://docs.openhands.dev/openhands/usage/sandboxes/docker.md">Docker runtime</a><span class="kind off">官方</span> — 每会话一容器；<code>SANDBOX_VOLUMES=host:container:ro|rw</code> 的挂载声明方式。<span class="pill">片段核实</span></li>
+  <li><a href="https://github.com/PrimeIntellect-ai/verifiers">PrimeIntellect-ai/verifiers</a><span class="kind off">官方</span> — 环境即 Python 包；rollout 字段 <code>prompt/completion/answer/state/info</code>。<span class="pill">片段核实</span></li>
+  <li><a href="https://github.com/google-research/android_world">google-research/android_world</a><span class="kind off">官方</span> — 状态型 evaluator（查 SQLite 行）、确定性 reset。<span class="pill">摘要</span></li>
+  <li><a href="https://github.com/xlang-ai/OSWorld">xlang-ai/OSWorld</a><span class="kind off">官方</span> — Gym 式 <code>DesktopEnv</code> 生命周期、VM 快照、多 provider（VMware/VirtualBox/Docker/AWS/Modal/Daytona）。<span class="pill">二手整理 + 摘要</span></li>
+  <li><a href="https://github.com/THUDM/AgentBench">THUDM/AgentBench</a> / <a href="https://github.com/WooooDyy/AgentGym">AgentGym</a><span class="kind off">官方</span> — 「每环境一容器」与五端点 HTTP 接口（<code>/createEnv /reset /step /observation</code>）。<span class="pill">摘要</span></li>
+  <li><a href="https://firecracker-microvm.github.io/">Firecracker</a> / <a href="https://gvisor.dev/">gVisor</a> / <a href="https://katacontainers.io/">Kata Containers</a><span class="kind off">官方</span> — 隔离层级：共享内核容器 / 用户态内核 / 微虚机。<span class="pill">摘要</span></li>
+  <li><a href="https://e2b.dev/">E2B</a> / <a href="https://www.daytona.io/">Daytona</a> / <a href="https://modal.com/docs/guide/sandbox">Modal Sandboxes</a> / <a href="https://www.runloop.ai/">Runloop</a> / <a href="https://www.morph.so/">Morph</a> / <a href="https://codesandbox.io/">CodeSandbox</a><span class="kind off">官方（产品页）</span> — 托管 sandbox 的形态：按秒计费、快照/恢复、模板。<b>本报告仅借概念，不推荐使用。</b><span class="pill">产品页摘要，价格未核对官方计费页</span></li>
+</ol>
+
+<h3>9.2 中可信（论文报告 / 需要交叉验证）</h3>
+<ol class="src" start="15">
+  <li><a href="https://www2.eecs.berkeley.edu/Pubs/TechRpts/2026/EECS-2026-158.pdf">R2E-Gym 技术报告（UC Berkeley EECS-2026-158）</a><span class="kind pap">论文</span> — 「单 GRPO 迭代 512 个并行容器 → Docker API server 过载、daemon 崩溃 → 迁移到 K8s」。<b>本报告 §1.1 第 3 条的直接依据。</b><span class="pill">PDF 片段</span></li>
+  <li><a href="https://neurips.cc/virtual/2026/loc/sydney/166780">RL Environments are an Infrastructure Problem（NeurIPS 2026）</a><span class="kind pap">论文</span> — 「每个优化步需要数千个并发、有状态、沙箱化的环境执行」；主张在<b>推理网关</b>处捕获轨迹，而非标准化环境类层次。<b>本报告 §5.1「proxy 记录 + replay」的思路来源。</b><span class="pill">摘要</span></li>
+  <li><a href="https://openreview.net/pdf?id=uobROwBsJm">MCPMark（ICLR 2026 投稿）</a><span class="kind pap">论文</span> — 127 任务 / 38 初始状态 / 5 MCP 环境；任务后程序化校验并重置。<span class="pill">PDF 片段（与官方文档的 1233 任务/95 world 版本有差异，见 §10 矛盾）</span></li>
+  <li><a href="https://openreview.net/pdf?id=LZnKNApvhG">TheAgentCompany</a> · <a href="https://openreview.net/pdf/809ea06000ab99297f5d1daef441b09dfcf4dfc9.pdf">WorkArena</a> · <a href="https://export.arxiv.org/pdf/2412.05467v3">BrowserGym 生态</a><span class="kind pap">论文</span> — checkpoint 级 evaluator、<code>validate()</code> 契约、统一 web 接口。<span class="pill">PDF 片段</span></li>
+  <li><a href="https://arxiv.org/html/2405.14573v3">AndroidWorld</a><span class="kind pap">论文</span> — 「evaluator 直接检查新增/删除的数据库行」的原文表述。<span class="pill">HTML 片段</span></li>
+  <li><a href="https://huggingface.co/datasets/supermemory/xAFS">supermemory/xAFS</a> · <a href="https://github.com/Synvo-ai/FileGram">FileGram</a><span class="kind pap">论文/数据</span> — 5→10K 文件的难度旋钮；文件系统行为轨迹作为个人化标注。<span class="pill">片段</span></li>
+  <li><a href="https://developer.aliyun.com/article/1771367">阿里云 2 核 4G 价格整理</a><span class="kind inf">二手</span> — 按量约 0.35–0.39 元/小时、包月约 130–200 元。用于 §7 量级估算，<b>未在官方计费页核对</b>。<span class="pill">二手页面</span></li>
+</ol>
+
+<h3>9.3 未被本报告采信 / 已降级</h3>
+<ol class="src" start="22">
+  <li>多家「sandbox 成本计算器」与对比博客（withruntime、dracon、temps.sh、ecorpit）<span class="kind inf">二手</span> — 单价彼此接近（E2B $0.0504/vCPU·h、Modal $0.0710/vCPU·h），但均带自家产品倾向；只用于确认<b>数量级</b>，不引用具体账单。</li>
+  <li>DeepWiki 等对 OSWorld 的二手架构整理 — 用于交叉验证「Gym 式生命周期 + 快照」，不单独作为证据。</li>
+  <li>若干疑似 AI 生成/SEO 的「2026 最佳沙箱」榜单 — 拒绝采信（如「Morph 免费无限」这类与官方免费档明显冲突的说法）。</li>
+</ol>
+
+<h3>9.4 矛盾与未验证项</h3>
+<div class="tablewrap">
+<table>
+  <caption>表 10：记录下来而不是悄悄抹平。</caption>
+  <thead><tr><th>项</th><th>冲突/缺口</th><th>本报告的处理</th></tr></thead>
+  <tbody>
+    <tr><td>MCPMark 规模</td><td>官方 EigenData 文档：1233 任务 / 95 world；ICLR 投稿 PDF：127 任务 / 38 初始状态。可能是「v1 论文版」与「v2 数据集版」的差异。</td><td>表 3 用官方数据集口径并注明；不把这个数字用于任何结论。</td></tr>
+    <tr><td>托管 sandbox 单价</td><td>第三方计算器与「官方定价页」未能核对（抓取受限）；且同一家在不同文章里报价不同（可能含/不含 plan fee）。</td><td>§7 只给「1 元/小时量级」，并标注为二手。</td></tr>
+    <tr><td>OSWorld / AndroidWorld / WorkArena 等许可</td><td>未能逐一打开 LICENSE 文件核对。</td><td>表中标「未核实」；不作为使用建议依据。</td></tr>
+    <tr><td>Personal Agent Bench</td><td>本次未拿到稳定官方入口，无法确认范围与许可。</td><td>表 4 保留一行并标注「未核实」。</td></tr>
+    <tr><td>GKE「45×」</td><td>厂商自述，无第三方复现；基准口径（冷启动 vs 端到端）未在片段中说明。</td><td>标注「官方声明，未独立复现」，不进入任何定量结论。</td></tr>
+    <tr><td>Docker <code>--read-only/--tmpfs/--cap-drop</code> 官方文档</td><td>抓取返回 429，仅从第三方安全加固文档看到相同写法。</td><td>§6 的命令按 Docker CLI 标准语义书写；<b>首次运行请以 <code>docker run --help</code> 为准</b>。</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2 id="one">10. 如果只做一件事，做什么</h2>
+
+<div class="lede">
+<p><strong>做「一次运行 = 一个不可变指纹 + 一条可验证证据链」这件事。</strong></p>
+<p>具体是：把 <code>corpus/Victoria_Subset</code> 以 <code>:ro</code> 挂到一个 <code>--network none --read-only --cap-drop ALL --user 1000:1000</code> 的容器里的 <code>/home/victoria</code>，跑完 ingest → graph → 11 题 QA，然后逼自己在 <code>artifacts/runs/&lt;id&gt;/</code> 里只留下四样东西：<b>manifest.json</b>（语料 hash / 镜像 digest / 代码 commit / 模型 id / prompt hash）、<b>trace.jsonl</b>（每步一行）、<b>evidence.json</b>（每条答案 → 文件路径 + 定位符）、<b>report.md</b>（人读的结论）。</p>
+<p>理由：这四样东西同时买到三件别人要花一个季度才能买到的东西——<b>可复现</b>（指纹可重算）、<b>可评分</b>（证据可断言）、<b>可增量</b>（换一个 wave 目录就是新环境，指纹自然变化）。而它不需要 K8s、不需要 microVM、不需要任何账号，一个下午能做完。</p>
+</div>
+
+<footer>
+<p>本报告为课程项目 pj01（选题 1：帮助 Agent 的全 PC 文件管理记忆系统，PC-Mem）的前置调研。所有外部论断按「官方 / 论文 / 推断」标注；未验证项集中在 §9.4。报告本身不含任何 HippoCamp 原始数据。</p>
+<p>写作方式说明：结构、表格归类、P0/P1/P2 分级、成本算术与「如果只做一件事」为作者归纳；§9 中逐条标注了证据类型与核实程度。</p>
+</footer>
+
+</div>
+</body>
+</html>

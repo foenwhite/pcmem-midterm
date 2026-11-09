@@ -1,0 +1,1206 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>同类项目 / 竞品调研报告 · 知识图谱课程项目（pj01 五选题）</title>
+<style>
+  :root{
+    --bg:#f7f7f5; --fg:#1b1b1a; --muted:#6b6b66; --line:#e2e1dc; --card:#fff;
+    --accent:#2f6f4f; --accent2:#1f4f74;
+    --kg-yes:#1e7a4b; --kg-yes-bg:#e7f5ec;
+    --kg-mix:#9a6503; --kg-mix-bg:#fdf3e0;
+    --kg-no:#7a4a86; --kg-no-bg:#f6ecf8;
+    --star:#8a6d1f; --star-bg:#fbf4dd;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#16171a; --fg:#e9e9e6; --muted:#a3a39c; --line:#2e3034; --card:#1e2024;
+      --accent:#7fc9a0; --accent2:#8cc4ee;
+      --kg-yes:#8fe0b4; --kg-yes-bg:#16301f;
+      --kg-mix:#f0c072; --kg-mix-bg:#332611;
+      --kg-no:#d8a8e6; --kg-no-bg:#2c1d31;
+      --star:#e8cf87; --star-bg:#2f2712;
+    }
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--fg);
+    font:15px/1.7 -apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1120px;margin:0 auto;padding:32px 20px 80px}
+  header.top{border-bottom:2px solid var(--fg);padding-bottom:22px;margin-bottom:26px}
+  h1{font-size:29px;line-height:1.3;margin:0 0 6px;letter-spacing:-.2px}
+  .sub{color:var(--muted);font-size:14px;margin:0}
+  .meta-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:20px 0 0}
+  .meta-grid div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+  .meta-grid b{display:block;font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+  .meta-grid span{font-size:13.5px}
+  .legend{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0 0;font-size:13px}
+  .legend span{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px 11px}
+
+  nav.toc{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 92%,transparent);
+    backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:10px 0;margin:0 -20px 22px;
+    display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  nav.toc a{font-size:13px;padding:5px 11px;border-radius:8px;border:1px solid var(--line);
+    background:var(--card);color:var(--fg);text-decoration:none;white-space:nowrap}
+  nav.toc a:hover{border-color:var(--accent);color:var(--accent)}
+
+  .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:var(--card);
+    border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:26px}
+  .toolbar label{font-size:13px;color:var(--muted)}
+  .toolbar input[type=search]{flex:1 1 190px;min-width:150px;padding:7px 10px;border:1px solid var(--line);
+    border-radius:8px;background:var(--bg);color:var(--fg);font-size:14px}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chips button{font:inherit;font-size:12.5px;padding:5px 11px;border-radius:999px;cursor:pointer;
+    border:1px solid var(--line);background:var(--bg);color:var(--fg)}
+  .chips button[aria-pressed=true]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+  .count{font-size:12.5px;color:var(--muted);margin-left:auto;white-space:nowrap}
+
+  section.topic{margin:0 0 46px;scroll-margin-top:70px}
+  .topic-head{border-left:5px solid var(--accent);padding:2px 0 2px 14px;margin-bottom:8px}
+  .topic-head h2{font-size:21px;margin:0 0 3px}
+  .topic-head .prompt{color:var(--muted);font-size:13.5px;margin:0}
+  .topic-note{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--accent2);
+    border-radius:8px;padding:10px 14px;margin:12px 0 18px;font-size:13.5px;color:var(--fg)}
+  .topic-note b{color:var(--accent2)}
+  h3.grp{font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);
+    margin:24px 0 12px;padding-bottom:6px;border-bottom:1px dashed var(--line)}
+
+  .cards{display:grid;gap:12px}
+  article.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px 16px}
+  article.card.hide{display:none}
+  article.card header{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;justify-content:space-between}
+  article.card a.name{font-size:15.5px;font-weight:650;color:var(--accent2);text-decoration:none;word-break:break-all}
+  article.card a.name:hover{text-decoration:underline}
+  .tags{display:flex;flex-wrap:wrap;gap:6px;font-size:11.5px}
+  .tags span{padding:2px 8px;border-radius:6px;white-space:nowrap;border:1px solid transparent}
+  .star{background:var(--star-bg);color:var(--star)}
+  .date{background:var(--bg);color:var(--muted);border-color:var(--line)}
+  .nogh{background:var(--bg);color:var(--muted);border-color:var(--line)}
+  .kg{font-weight:600}
+  .kg.yes{background:var(--kg-yes-bg);color:var(--kg-yes)}
+  .kg.mix{background:var(--kg-mix-bg);color:var(--kg-mix)}
+  .kg.no{background:var(--kg-no-bg);color:var(--kg-no)}
+  article.card p{margin:7px 0 0;font-size:14px}
+  article.card p.desc{color:var(--fg)}
+  article.card p.why{color:var(--muted);font-size:13.3px;border-top:1px dashed var(--line);padding-top:7px;margin-top:9px}
+  article.card p.why b{color:var(--accent)}
+
+  .gap{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin-top:18px}
+  .gap h4{margin:0 0 8px;font-size:14.5px}
+  .gap ul{margin:0;padding-left:20px;font-size:13.6px}
+  .gap li{margin:4px 0}
+  .gap .done{color:var(--muted)}
+  .gap .void::marker{color:var(--accent)}
+  .gap .do::marker{color:var(--accent2)}
+  .gap .void b,.gap .do b{color:var(--fg)}
+
+  details.appendix{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:26px 0}
+  details.appendix summary{cursor:pointer;font-weight:650;font-size:14.5px}
+  details.appendix ul{font-size:13.4px;padding-left:20px}
+  footer.end{border-top:1px solid var(--line);margin-top:40px;padding-top:16px;font-size:12.8px;color:var(--muted)}
+  footer.end code{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:1px 5px;font-size:12px}
+  .tldr{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 20px;margin:0 0 26px}
+  .tldr h2{font-size:16px;margin:0 0 8px}
+  .tldr ol{margin:0;padding-left:22px;font-size:14px}
+  .tldr li{margin:6px 0}
+  @media print{
+    nav.toc,.toolbar{display:none}
+    body{background:#fff;color:#000}
+    article.card{break-inside:avoid;border-color:#ccc}
+    section.topic{break-before:auto}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1>同类项目 / 竞品调研报告</h1>
+  <p class="sub">《知识图谱：概念与技术》课程项目 · <code>pj/pj01</code> · 针对 <b>课程选题-1.pdf</b> 给出的五个候选方向</p>
+  <div class="meta-grid">
+    <div><b>调研对象</b><span>选题 1–5 的同类系统、开源项目、商业产品与标准</span></div>
+    <div><b>数据快照</b><span>2026-10-13（GitHub API 实取）</span></div>
+    <div><b>入库门槛</b><span>仅对 <b>GitHub 托管</b>项目生效：<b>★ ≥ 1,000</b></span></div>
+    <div><b>入选条目</b><span>106 条（● 27 / ◐ 26 / ○ 53；另有 7 条门槛以下学术参考见附录）</span></div>
+  </div>
+  <div class="legend">
+    <span><b class="kg yes" style="padding:2px 7px;border-radius:6px">●</b>&nbsp;使用显式知识图谱 / 本体 / schema</span>
+    <span><b class="kg mix" style="padding:2px 7px;border-radius:6px">◐</b>&nbsp;部分结构化（图 + 向量混合，或仅有结构化记忆模块，无显式本体）</span>
+    <span><b class="kg no" style="padding:2px 7px;border-radius:6px">○</b>&nbsp;无知识图谱（向量检索、规则或纯 LLM）</span>
+  </div>
+</header>
+
+<nav class="toc">
+  <a href="#tldr">摘要</a>
+  <a href="#g0">通用底座</a>
+  <a href="#g1">选题 1 · PC 文件记忆</a>
+  <a href="#g2">选题 2 · 多源消息官</a>
+  <a href="#g3">选题 3 · 项目考古学家</a>
+  <a href="#g4">选题 4 · 个人数字人</a>
+  <a href="#g5">选题 5 · 股票量化情报</a>
+  <a href="#appendix">附录</a>
+</nav>
+
+<div class="toolbar">
+  <label for="q">搜索</label>
+  <input id="q" type="search" placeholder="项目名 / 关键词，如 graphiti、供应链、ADR …">
+  <div class="chips" id="kgchips" role="group" aria-label="按知识图谱使用情况筛选">
+    <button data-kg="all" aria-pressed="true">全部</button>
+    <button data-kg="yes" aria-pressed="false">● 有 KG</button>
+    <button data-kg="mix" aria-pressed="false">◐ 混合</button>
+    <button data-kg="no" aria-pressed="false">○ 无 KG</button>
+  </div>
+  <span class="count" id="count"></span>
+</div>
+
+<section class="tldr" id="tldr">
+  <h2>摘要：五个选题各自的"已经有人做了"和"还没人做"</h2>
+  <ol>
+    <li><b>选题 1（PC 文件记忆）</b>——采集层已商品化（Recall、screenpipe），检索层已成熟（Khoj、AnythingLLM），<b>但"项目 / 版本 / 引用"关系没有任何一个系统显式建模</b>。可做的差异化：项目级本体 + 双时间轴的版本演化链。</li>
+    <li><b>选题 2（多源消息官）</b>——聚合、去重、摘要、排序全部有成熟产品（Folo、Horizon、Kagi News、Feedly Leo、GDELT）。<b>空白在于"面向个人的、持续更新的实体-事件图"，以及"旧结论被新证据推翻"的状态更新</b>（GDELT 是世界的图，不是"我的图"）。</li>
+    <li><b>选题 3（项目考古学家）</b>——2026 年"代码知识图谱"这一波（graphify 126k★、codegraph 74k★）已经把<b>当前代码快照</b>的图做透了；<b>时间维度几乎无人触及</b>：没有跨版本的时序知识、没有"为什么改成这样"的动机抽取。这是最清晰的空白，也是最值得选的题。</li>
+    <li><b>选题 4（个人数字人）</b>——风格克隆（WeClone）、记忆写入（mem0/memU）、手动图谱（Logseq）都很成熟。<b>缺"经历/事件"的统一表示、跨源同一事件的对齐，以及长期一致性与遗忘机制</b>；而且明星产品 Rewind/Limitless 已于 2025-12-19 关停，正说明"只记录不结构化"不可持续。</li>
+    <li><b>选题 5（股票量化情报）</b>——数据、LLM、Agent、回测全都有强对手（OpenBB 74k★、TradingAgents 111k★、qlib 49k★、KAG 9k★）。<b>空白是"公司-产业-供应链-事件"融成持续更新知识网络并公开可复现的系统</b>，以及事件与行情的 <b>point-in-time 对齐</b>（未来信息泄露）与"跨公司影响路径"的可解释性评测。</li>
+  </ol>
+  <p style="font-size:13px;color:var(--muted);margin:10px 0 0">
+    重要提示：<b>本报告列举的绝大多数项目 <span class="kg no" style="padding:1px 6px;border-radius:5px">○</span> 并不使用知识图谱</b>——这既是威胁（"不用图谱也能做"），也正是课程项目要论证的对照面。凡是标注 ● / ◐ 的，都是可以直接拿来当技术底座或 baseline 的。
+  </p>
+</section>
+
+<!-- ============================================================ G0 -->
+<section class="topic" id="g0">
+  <div class="topic-head">
+    <h2>第 0 组 · 跨选题通用底座（记忆 / 图 RAG / 图数据库）</h2>
+    <p class="prompt">这 10 个不是"竞品"，而是五个选题都可能共用的技术底座。先定底座，再谈选题，能省掉一半重复调研。</p>
+  </div>
+  <div class="cards">
+
+    <article class="card" data-kg="yes" data-stars="36323">
+      <header><a class="name" href="https://github.com/microsoft/graphrag" target="_blank" rel="noopener">microsoft/graphrag</a>
+        <span class="tags"><span class="star">★ 36,323</span><span class="date">更新 2026-10-12</span><span class="kg yes">● 有 KG</span></span></header>
+      <p class="desc">微软开源的"图式 RAG"框架：先用 LLM 从语料中抽取实体与关系，再做社区聚类生成"社区摘要"；查询时提供局部（实体邻域）与全局（主题摘要）两种检索粒度。它是"显式知识表示 vs 向量 RAG"最常被引用的公开对照基线。</p>
+      <p class="why"><b>对本项目</b>：几乎任何选题的"对比实验"都要拿它当 baseline（局部/全局查询的差别正好对应"多跳推理"和"跨来源概括"）。已知短板：构建成本高、增量更新弱——这正是你可以发力的地方。</p>
+    </article>
+
+    <article class="card" data-kg="yes" data-stars="40111">
+      <header><a class="name" href="https://github.com/HKUDS/LightRAG" target="_blank" rel="noopener">HKUDS/LightRAG</a>
+        <span class="tags"><span class="star">★ 40,111</span><span class="date">更新 2026-10-12</span><span class="kg yes">● 有 KG</span></span></header>
+      <p class="desc">双层级图索引（低层实体 / 高层主题）+ 增量插入，声称在 token 成本与构建速度上显著优于 GraphRAG，并支持新数据持续入库（EMNLP 2025）。</p>
+      <p class="why"><b>对本项目</b>：选题 1/2/3 都要求"持续更新已有知识"，LightRAG 的增量图索引是现成解法；把它与 GraphRAG 的"重建式"更新做对照，本身就是一组很好的实验。</p>
+    </article>
+
+    <article class="card" data-kg="yes" data-stars="31702">
+      <header><a class="name" href="https://github.com/getzep/graphiti" target="_blank" rel="noopener">getzep/graphiti</a>
+        <span class="tags"><span class="star">★ 31,702</span><span class="date">更新 2026-10-13</span><span class="kg yes">● 有 KG</span></span></header>
+      <p class="desc">面向 Agent 的<b>时序知识图谱</b>：把对话/事件作为 episode 写入，自动抽取实体与关系，并维护<b>双时间轴</b>（事件真实发生时间 vs 系统录入时间），支持"某时刻的事实快照"、失效与矛盾检测。</p>
+      <p class="why"><b>对本项目</b>：课程难点里的"版本关系""时间关系""过期信息处理""旧信息被新信息推翻"——graphiti 是唯一把这些当作一等公民的开源底座。选题 1/2/5 都建议直接基于它做。</p>
+    </article>
+
+    <article class="card" data-kg="mix" data-stars="67107">
+      <header><a class="name" href="https://github.com/mem0ai/mem0" target="_blank" rel="noopener">mem0ai/mem0</a>
+        <span class="tags"><span class="star">★ 67,107</span><span class="date">更新 2026-10-12</span><span class="kg mix">◐ 混合</span></span></header>
+      <p class="desc">事实抽取式长期记忆层：从对话中抽取"记忆条目"，做去重、冲突更新与用户级隔离，向量库为主、图存储可选（graph memory）。是工业界集成最广的记忆中间件。</p>
+      <p class="why"><b>对本项目</b>：这是"最省事的记忆方案"，也是你必须超越的 baseline——它只做"条目级"抽取与检索，没有本体、没有项目/事件层级、没有显式的跨实体推理。</p>
+    </article>
+
+    <article class="card" data-kg="mix" data-stars="25121">
+      <header><a class="name" href="https://github.com/letta-ai/letta" target="_blank" rel="noopener">letta-ai/letta（MemGPT）</a>
+        <span class="tags"><span class="star">★ 25,121</span><span class="date">更新 2026-09-10</span><span class="kg mix">◐ 混合</span></span></header>
+      <p class="desc">把 LLM 上下文当"内存"、外部存储当"磁盘"的有状态 Agent 框架：Agent 自己管理记忆的分页、换出与检索，强调长期记忆与自我改进。</p>
+      <p class="why"><b>对本项目</b>：它解决了"何时写入/何时调出记忆"这一调度问题（选题 4 明确问到"Agent 应该在什么情况下主动调用哪些记忆"），但记忆本身是自由文本块，无显式结构。</p>
+    </article>
+
+    <article class="card" data-kg="yes" data-stars="32158">
+      <header><a class="name" href="https://github.com/topoteretes/cognee" target="_blank" rel="noopener">topoteretes/cognee</a>
+        <span class="tags"><span class="star">★ 32,158</span><span class="date">更新 2026-10-13</span><span class="kg yes">● 有 KG</span></span></header>
+      <p class="desc">ECL（Extract–Cognify–Load）流水线：把文档与对话转成统一的"记忆图 + 向量"，用同一次查询同时打图与向量，主打小模型本地运行、零成本起步。</p>
+      <p class="why"><b>对本项目</b>：它的三层记忆分层（会话/知识/图）与"统一查询接口"值得直接抄工程结构；开源可自托管，适合做小型演示系统。</p>
+    </article>
+
+    <article class="card" data-kg="mix" data-stars="92146">
+      <header><a class="name" href="https://github.com/infiniflow/ragflow" target="_blank" rel="noopener">infiniflow/ragflow</a>
+        <span class="tags"><span class="star">★ 92,146</span><span class="date">更新 2026-10-13</span><span class="kg mix">◐ 混合</span></span></header>
+      <p class="desc">端到端 RAG 引擎：自研 DeepDoc 文档理解（版面分析、表格识别）+ 分块检索 + 可选的实体/关系抽取（Knowledge Graph 模式），工程完成度极高。</p>
+      <p class="why"><b>对本项目</b>：选题 1（异构文件解析）与选题 5（公告/财报解析）可以把它当"摄取层"直接用；但它默认不维护跨文档、跨时间的实体链接。</p>
+    </article>
+
+    <article class="card" data-kg="yes" data-stars="9492">
+      <header><a class="name" href="https://github.com/FalkorDB/FalkorDB" target="_blank" rel="noopener">FalkorDB/FalkorDB</a>
+        <span class="tags"><span class="star">★ 9,492</span><span class="date">更新 2026-10-13</span><span class="kg yes">● 有 KG</span></span></header>
+      <p class="desc">基于 GraphBLAS 稀疏矩阵的高性能图数据库，定位就是"给 LLM 用的知识图谱"（GraphRAG），提供多跳查询与向量检索的组合。</p>
+      <p class="why"><b>对本项目</b>：若自建本体与图 schema，比 Neo4j 更轻、更快接入 GraphRAG 生态；Neo4j + Cypher 仍是教学最常规的选择（见选题 5 的教程类项目）。</p>
+    </article>
+
+    <article class="card" data-kg="yes" data-stars="6198">
+      <header><a class="name" href="https://github.com/HelixDB/helix-db" target="_blank" rel="noopener">HelixDB/helix-db</a>
+        <span class="tags"><span class="star">★ 6,198</span><span class="date">更新 2026-10-12</span><span class="kg yes">● 有 KG</span></span></header>
+      <p class="desc">Rust 实现、跑在对象存储上的 OLTP 图数据库，原生内置向量与全文索引（"图 + 向量 + 文本"一套引擎）。</p>
+      <p class="why"><b>对本项目</b>：适合作为"混合检索"的存储层选型；相比需要自己拼接 Neo4j + FAISS 的方案，部署与一致性成本更低。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="155533">
+      <header><a class="name" href="https://github.com/open-webui/open-webui" target="_blank" rel="noopener">open-webui/open-webui</a>
+        <span class="tags"><span class="star">★ 155,533</span><span class="date">更新 2026-10-13</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">最流行的自托管 LLM 交互外壳：多模型接入、知识库上传、RAG、工具调用与权限管理。</p>
+      <p class="why"><b>对本项目</b>：报告要求"原型系统（demo 展示）"，它是成本最低的 demo 外壳——把 RAG 换掉、接上你自己的图谱服务即可，不用把力气花在前端。</p>
+    </article>
+
+  </div>
+</section>
+
+<!-- ============================================================ G1 -->
+<section class="topic" id="g1">
+  <div class="topic-head">
+    <h2>选题 1 · 帮助 Agent 的全 PC 文件管理记忆系统</h2>
+    <p class="prompt">题目要点：文件分散、多版本、跨目录；目录+文件名已不够；普通语义检索只会"找相似"；要求回答"属于哪个项目 / 哪个是最新版 / 以前做过类似的事"。</p>
+  </div>
+  <div class="topic-note">
+    <b>先把赛道分层再调研：</b>采集层（截图/OCR）→ 解析层 → 记忆存储层 → 关系推理层 → 交互层。
+    <b>结论：前四层都有强对手，第五层（项目/版本/引用关系的推理）基本空缺。</b>
+  </div>
+
+  <h3 class="grp">采集与"电脑历史"</h3>
+  <div class="cards">
+
+    <article class="card" data-kg="no" data-stars="21930">
+      <header><a class="name" href="https://github.com/screenpipe/screenpipe" target="_blank" rel="noopener">screenpipe（原 mediar-ai）</a>
+        <span class="tags"><span class="star">★ 21,930</span><span class="date">更新 2026-10-13</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">7×24 本地录制屏幕与麦克风，OCR + 转写后建成本地可检索的"电脑历史"，主打把个人工作上下文喂给 AI Agent，现已商业化（YC S26，网站 screenpi.pe）。</p>
+      <p class="why"><b>对本选题</b>：证明"采集层已商品化、且正在被 Agent 生态吸收"。你在采集上不可能赢它，差异化只能放在它没做的结构化记忆与关系推理。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="2957">
+      <header><a class="name" href="https://github.com/openrecall/openrecall" target="_blank" rel="noopener">openrecall/openrecall</a>
+        <span class="tags"><span class="star">★ 2,957</span><span class="date">更新 2025-09-24</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">开源版 Windows Recall：定时截屏 + OCR + 本地向量检索，主打"隐私优先的回忆录"。</p>
+      <p class="why"><b>对本选题</b>：已近一年停更，恰好说明"截图 + 向量相似度"这条路线缺乏长期价值——只解决"找到相似画面"，不解决任何关系问题。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="0">
+      <header><a class="name" href="https://learn.microsoft.com/en-us/windows/ai/recall/" target="_blank" rel="noopener">Microsoft Recall（Windows 内置）</a>
+        <span class="tags"><span class="nogh">非 GitHub · 不受门槛限制</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">Copilot+ PC 的系统级功能：持续快照屏幕，建立语义索引，支持自然语言回找"我什么时候看过这个"；历经多次延期与隐私争议，自 2025 年底起正式可用，支持加密、卸载与按应用/站点过滤。</p>
+      <p class="why"><b>对本选题</b>：系统级对手，必须引用。它只做"快照检索"，不理解项目、版本、引用关系——这是你论证"结构化知识带来增量价值"的最强参照。</p>
+    </article>
+
+  </div>
+
+  <h3 class="grp">记忆层：从"条目"到"结构化"</h3>
+  <div class="cards">
+
+    <article class="card" data-kg="mix" data-stars="3451">
+      <header><a class="name" href="https://github.com/Mirix-AI/MIRIX" target="_blank" rel="noopener">Mirix-AI/MIRIX</a>
+        <span class="tags"><span class="star">★ 3,451</span><span class="date">更新 2026-10-08</span><span class="kg mix">◐ 混合</span></span></header>
+      <p class="desc">多智能体个人助手：持续捕获屏幕活动，按<b>记忆类型分层固化</b>（episodic / semantic / procedural / resource / knowledge vault），再由不同 Agent 分别负责检索、反思与固化。</p>
+      <p class="why"><b>对本选题</b>：与"从文件搜索升级为理解长期工作历史"高度同构，而且免费给了你一套<b>记忆类型学</b>（哪些是事实、哪些是流程、哪些是资源）——可以直接借来做本体设计。</p>
+    </article>
+
+    <article class="card" data-kg="yes" data-stars="4162">
+      <header><a class="name" href="https://github.com/basicmachines-co/basic-memory" target="_blank" rel="noopener">basicmachines-co/basic-memory</a>
+        <span class="tags"><span class="star">★ 4,162</span><span class="date">更新 2026-10-12</span><span class="kg yes">● 有 KG</span></span></header>
+      <p class="desc">"让 AI 对话真正记住你"：把 Markdown 笔记解析成由 <code>observation</code>（观察）与 <code>relation</code>（关系）构成的<b>本地知识图谱</b>，支持正向/反向链接遍历、按项目组织，通过 MCP 暴露给 Agent。</p>
+      <p class="why"><b>对本选题</b>：刻意不用黑盒向量——所有知识都是人可读、可 diff、可版本控制的 Markdown。这是"最小可行知识图谱"的最佳模板，也是你论证"显式表示可维护性"的现成证据。</p>
+    </article>
+
+    <article class="card" data-kg="mix" data-stars="2232">
+      <header><a class="name" href="https://github.com/microsoft/kernel-memory" target="_blank" rel="noopener">microsoft/kernel-memory</a>
+        <span class="tags"><span class="star">★ 2,232</span><span class="date">更新 2026-06-08</span><span class="kg mix">◐ 混合</span></span></header>
+      <p class="desc">面向"用户 / 团队 / 应用"三个层级的记忆方案：文档管道（摄取→分块→嵌入）+ 记忆存储（向量 + 可选图）+ 检索编排，含完整的分层架构与 API。</p>
+      <p class="why"><b>对本选题</b>：它的"用户级 vs 团队级记忆"分层，直接对应"个人文件空间 vs 项目空间"的双层组织方式，值得在 schema 里体现。</p>
+    </article>
+
+    <article class="card" data-kg="yes" data-stars="31702">
+      <header><a class="name" href="https://github.com/getzep/graphiti" target="_blank" rel="noopener">getzep/graphiti</a>
+        <span class="tags"><span class="star">★ 31,702</span><span class="date">更新 2026-10-13</span><span class="kg yes">● 有 KG</span></span></header>
+      <p class="desc">时序知识图谱底座（详见第 0 组）：episode 写入、实体关系抽取、双时间轴、事实失效与矛盾检测。</p>
+      <p class="why"><b>对本选题</b>：题目里的"版本关系""时间关系""过期信息处理"在它这里都有原语；建议用它的 <code>valid_from / valid_to</code> 语义来实现"某文件在某时间点属于哪个项目/哪个版本"。</p>
+    </article>
+
+  </div>
+
+  <h3 class="grp">文件检索与"第二大脑"</h3>
+  <div class="cards">
+
+    <article class="card" data-kg="no" data-stars="37669">
+      <header><a class="name" href="https://github.com/khoj-ai/khoj" target="_blank" rel="noopener">khoj-ai/khoj</a>
+        <span class="tags"><span class="star">★ 37,669</span><span class="date">更新 2026-08-02</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">"个人第二大脑"：把本地文档与网页索引成语义检索库，提供对话式问答，可自托管、可接任意在线/本地 LLM，并支持定时自动化与研究任务。</p>
+      <p class="why"><b>对本选题</b>：这是"个人文件问答"这一层最成熟的开源实现，直接当 baseline。它的短板正是你的题眼：只有文档级相似度，没有项目、版本、引用之间的多跳关系。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="67021">
+      <header><a class="name" href="https://github.com/Mintplex-Labs/anything-llm" target="_blank" rel="noopener">Mintplex-Labs/anything-llm</a>
+        <span class="tags"><span class="star">★ 67,021</span><span class="date">更新 2026-10-12</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">本地优先的桌面 LLM 工作台：多模型、文档工作区（把一批文件夹做成可对话知识库）、Agent 与工具调用、向量/全文双检索。</p>
+      <p class="why"><b>对本选题</b>：可作为 demo 外壳或 baseline；它处理"一批文档"，但不处理"一个项目的长期演化"。</p>
+    </article>
+
+    <article class="card" data-kg="mix" data-stars="8543">
+      <header><a class="name" href="https://github.com/reorproject/reor" target="_blank" rel="noopener">reorproject/reor</a>
+        <span class="tags"><span class="star">★ 8,543</span><span class="date">更新 2025-05-13</span><span class="kg mix">◐ 混合</span></span></header>
+      <p class="desc">本地 AI 笔记应用：本地嵌入模型索引你的笔记，提供"相关笔记图"视图与前向/后向链接，全离线推理、数据不出机器。</p>
+      <p class="why"><b>对本选题</b>：代表"个人知识管理 + 嵌入"的主流做法，但 2025 年后近乎停更——说明纯向量关联在实践中的粘性有限。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="34224">
+      <header><a class="name" href="https://github.com/qarmin/czkawka" target="_blank" rel="noopener">qarmin/czkawka</a>
+        <span class="tags"><span class="star">★ 34,224</span><span class="date">更新 2026-09-16</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">多功能本地文件清理工具：查重复文件、相似图片（感知哈希）、空目录、损坏文件，速度极快。</p>
+      <p class="why"><b>对本选题</b>：<b>非 LLM 基线</b>。"版本识别"的第一层（完全重复 / 近似重复）已有成熟工具，你的图谱应当建在它之上（文件级 hash/相似度作为证据），而不是重新发明。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="0">
+      <header><a class="name" href="https://www.voidtools.com/" target="_blank" rel="noopener">Everything / Recoll</a>
+        <span class="tags"><span class="nogh">非 GitHub · 不受门槛限制</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">传统桌面搜索的两个极端：Everything（Windows，文件名瞬时索引，秒级枚举）与 Recoll（Linux/macOS，全文 + 元数据检索，支持插件式语义扩展）。</p>
+      <p class="why"><b>对本选题</b>：对照组。它们能瞬间回答"哪个文件名匹配"，完全不能回答"哪个是最新版、属于哪个项目"——这是报告引言里最好的对比材料。</p>
+    </article>
+
+  </div>
+
+  <div class="gap">
+    <h4>竞品空白与选题建议</h4>
+    <ul>
+      <li class="done"><b>已被解决：</b>截图/OCR 采集（Recall、screenpipe）、文档问答（Khoj、AnythingLLM 67k★）、相似检索、重复文件检测（czkawka）、单条记忆写入与去重（mem0、cognee）、时序事实（graphiti）。</li>
+      <li class="void"><b>空白 1：项目级本体缺失。</b>没有任何一个系统把 <code>Project / Deliverable / Version / cites / derives-from / supersedes</code> 建模成一等公民。</li>
+      <li class="void"><b>空白 2：版本判定是"相似度"而非"演化链"。</b>czkawka 给重复，Khoj 给相似，但"v1→v2→最终版"的有向演化链没人做。</li>
+      <li class="void"><b>空白 3：无人做遗忘与过期。</b>题目明确问到的"长期记忆更新与遗忘"在所有开源系统里都是缺失项。</li>
+      <li class="void"><b>空白 4：没有评测集。</b>要证明 KG 比 RAG 好，需要自己造一个"文件→项目→时间"的多跳问答集（可人工标注 50–100 题）。</li>
+      <li class="do"><b>建议定位：</b>以 graphiti 式双时间轴 + basic-memory 式可读图谱为骨架，自建"文件演化本体"；对照组 = Khoj/AnythingLLM（纯向量）与 czkawka（无 LLM）。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================ G2 -->
+<section class="topic" id="g2">
+  <div class="topic-head">
+    <h2>选题 2 · 天才消息官：多源消息收集整理与决策推荐</h2>
+    <p class="prompt">题目要点：来源多、更新快、重复多、上下文分散；单条消息不重要、多条组合才成趋势；要能回答"发生了什么 / 什么值得关注 / 是否影响决策"。</p>
+  </div>
+  <div class="topic-note">
+    <b>赛道现状：</b>聚合、去重、摘要、排序全部有成熟产品，且大厂在做（Feedly Leo、Kagi News、Apple 通知摘要）。
+    <b>唯一的空白是"面向个人的、持续更新的实体-事件图"以及状态更新（旧结论被推翻）——大厂产品都是"世界的图"，不是"我的图"。</b>
+  </div>
+
+  <h3 class="grp">聚合与读取端</h3>
+  <div class="cards">
+
+    <article class="card" data-kg="yes" data-stars="0">
+      <header><a class="name" href="https://www.gdeltproject.org/" target="_blank" rel="noopener">GDELT Project</a>
+        <span class="tags"><span class="nogh">非 GitHub · 不受门槛限制</span><span class="kg yes">● 有 KG</span></span></header>
+      <p class="desc">全球新闻事件图谱：把各国新闻自动编码成 CAMEO 事件（actor–action–target + 地点 + 时间 + 语气），每 15 分钟更新一次，提供 BigQuery / API / 原始文件，横跨 65 种语言、二十余年历史。</p>
+      <p class="why"><b>对本选题</b>：<b>"消息 → 结构化事件"的行业标杆</b>，也是现成的外部事件源与 ground truth（可用它校验你的事件聚类质量）。它做的是"世界的事件图"，个人关注方向、决策相关性完全不管——空白正好留给你。</p>
+    </article>
+
+    <article class="card" data-kg="yes" data-stars="0">
+      <header><a class="name" href="https://eventregistry.org/" target="_blank" rel="noopener">Event Registry</a>
+        <span class="tags"><span class="nogh">非 GitHub · 不受门槛限制</span><span class="kg yes">● 有 KG</span></span></header>
+      <p class="desc">商业新闻情报 API：自动把同一事件的成百上千篇报道<b>聚类成一个 event</b>，抽取实体（人物/机构/地点/概念）与关系，输出事件摘要、时间线、相似事件与媒体覆盖分析。</p>
+      <p class="why"><b>对本选题</b>："同一事件识别"这一难点的成熟实现。它的做法（事件聚类 + 实体链接 + 时间线）可以直接作为你的方法参考；但它不下任何"值得关注"的判断，也不建模"证据冲突"。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="46514">
+      <header><a class="name" href="https://github.com/DIYgod/RSSHub" target="_blank" rel="noopener">DIYgod/RSSHub</a>
+        <span class="tags"><span class="star">★ 46,514</span><span class="date">更新 2026-10-13</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">"万物皆可 RSS"：数千条路由把微博、知乎、B 站、公众号、播客、GitHub、arXiv 等没有 RSS 的站点变成标准 feed，配套公共实例与文档。</p>
+      <p class="why"><b>对本选题</b>：<b>数据源层的现成答案，直接省掉你一半采集工作量</b>。多源异构的你只需要处理"归一化 + 去重 + 事件归并"，而不是每个平台写爬虫。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="39095">
+      <header><a class="name" href="https://github.com/RSSNext/Folo" target="_blank" rel="noopener">RSSNext/Folo（Follow）</a>
+        <span class="tags"><span class="star">★ 39,095</span><span class="date">更新 2026-10-13</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">目前最流行的"AI RSS 阅读器"：统一收件箱 + AI 摘要/翻译/分类 + 每日摘要推送，同时支持 RSS 与社交通道，界面体验为同类最好。</p>
+      <p class="why"><b>对本选题</b>：读取端的产品标杆（体验层面参照物）；但它的"AI"止于摘要与标签，没有事件聚合、没有跨消息推理。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="9651">
+      <header><a class="name" href="https://github.com/Thysrael/Horizon" target="_blank" rel="noopener">Thysrael/Horizon</a>
+        <span class="tags"><span class="star">★ 9,651</span><span class="date">更新 2026-10-13</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">个人"新闻雷达"：多源抓取 → LLM 打分筛选 → 生成中英双语的每日简报并可直接发布，全流程开源可自托管。</p>
+      <p class="why"><b>对本选题</b>：与你的"每日/周期简报生成"环节<b>直接对标且可读源码</b>——重点看它的重要性打分与去噪策略，那是你要超越或对标的第一个环节。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="16280">
+      <header><a class="name" href="https://github.com/FreshRSS/FreshRSS" target="_blank" rel="noopener">FreshRSS</a>
+        <span class="tags"><span class="star">★ 16,280</span><span class="date">更新 2026-10-12</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">成熟的自托管 RSS 聚合器（PHP），支持多用户、标签、全文检索、插件与 API。</p>
+      <p class="why"><b>对本选题</b>：作为"无 LLM / 无关系"的经典基线：它把消息按 feed 和标签组织，正是题目所述"上下文分散、难以归并"的现状。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="9792">
+      <header><a class="name" href="https://github.com/miniflux/v2" target="_blank" rel="noopener">miniflux/v2</a>
+        <span class="tags"><span class="star">★ 9,792</span><span class="date">更新 2026-10-12</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">极简主义 RSS 阅读器（Go 单二进制），API 完善、依赖极少，常被当作自动化管道的上游。</p>
+      <p class="why"><b>对本选题</b>：工程上最省心的 feed 后端，适合做"消息进来"的第一跳。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="2588">
+      <header><a class="name" href="https://github.com/DevXDojo/MrRSS" target="_blank" rel="noopener">DevXDojo/MrRSS</a>
+        <span class="tags"><span class="star">★ 2,588</span><span class="date">更新 2026-10-13</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">跨平台免费 AI RSS 阅读器（Go），自带摘要与分类。</p>
+      <p class="why"><b>对本选题</b>：说明"AI 摘要型阅读器"已是红海且被免费产品压价——再次印证选题必须往"决策与关系"上走。</p>
+    </article>
+
+  </div>
+
+  <h3 class="grp">消息处理、自动化与跨源融合</h3>
+  <div class="cards">
+
+    <article class="card" data-kg="no" data-stars="50053">
+      <header><a class="name" href="https://github.com/huginn/huginn" target="_blank" rel="noopener">huginn/huginn</a>
+        <span class="tags"><span class="star">★ 50,053</span><span class="date">更新 2026-10-10</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">"创建替你监视并行动的 Agent"：以事件流 + 规则把网页/API 的变化转成通知、邮件、动作，是自托管的 IFTTT（含 LLM 节点）。</p>
+      <p class="why"><b>对本选题</b>：对应"哪些信息值得关注 + 触发什么动作"的<b>规则/触发式</b>实现范式，也是"消息→决策"最早的工程化形态（2013 年至今）。可作为"规则 vs 图推理"的对照。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="15177">
+      <header><a class="name" href="https://github.com/codelucas/newspaper" target="_blank" rel="noopener">codelucas/newspaper（newspaper3k）</a>
+        <span class="tags"><span class="star">★ 15,177</span><span class="date">更新 2026-09-15</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">新闻正文抽取与元数据（作者、日期、关键词、摘要）提取库，多语言、速度快。</p>
+      <p class="why"><b>对本选题</b>：多源清洗的基础组件——你真正要解决的是清洗之后的"归并"，不必在解析上耗时。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="12459">
+      <header><a class="name" href="https://github.com/elie222/inbox-zero" target="_blank" rel="noopener">elie222/inbox-zero</a>
+        <span class="tags"><span class="star">★ 12,459</span><span class="date">更新 2026-10-13</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">开源 AI 邮件助手：自动分类与归档、识别"需要回复"的邮件、生成草稿、统计待办与冷邮件。</p>
+      <p class="why"><b>对本选题</b>：<b>邮件这一路消息渠道的成熟对手</b>。它做的是"单渠道 + 单条消息"的处理；你的差异化在于把邮件与群聊、新闻里的<b>同一件事</b>串起来。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="1421">
+      <header><a class="name" href="https://github.com/beeper/bridge-manager" target="_blank" rel="noopener">beeper/bridge-manager</a>
+        <span class="tags"><span class="star">★ 1,421</span><span class="date">更新 2026-10-02</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">自托管消息桥接工具（基于 Matrix 协议），把 WhatsApp / Telegram / Signal / Discord 等平台的会话汇聚到一个统一入口。</p>
+      <p class="why"><b>对本选题</b>：解决"群聊/IM 多源"这一路的<b>入口统一</b>问题；接上之后你面对的是一套统一消息模型，正好可以开始做实体与事件抽取。</p>
+    </article>
+
+    <article class="card" data-kg="mix" data-stars="1642">
+      <header><a class="name" href="https://github.com/karlicoss/HPI" target="_blank" rel="noopener">karlicoss/HPI（Human Programming Interface）</a>
+        <span class="tags"><span class="star">★ 1,642</span><span class="date">更新 2026-10-10</span><span class="kg mix">◐ 混合</span></span></header>
+      <p class="desc">用 Python 把散落在各平台的数据（邮件、日历、浏览历史、消息、消费记录、位置…）统一成一套<b>带类型定义的可查询对象与 schema</b>，每个数据源一个模块，可增量导入本地。</p>
+      <p class="why"><b>对本选题</b>：虽然它自称不是知识图谱，但它是"<b>跨源统一 schema</b>"最扎实的工程实践——正是你构建本体前必须先立的"数据模型"这一层，强烈建议先读它的数据模型设计。</p>
+    </article>
+
+    <article class="card" data-kg="mix" data-stars="1902">
+      <header><a class="name" href="https://github.com/karlicoss/promnesia" target="_blank" rel="noopener">karlicoss/promnesia</a>
+        <span class="tags"><span class="star">★ 1,902</span><span class="date">更新 2026-09-12</span><span class="kg mix">◐ 混合</span></span></header>
+      <p class="desc">把浏览器历史与其它个人数据源互相关联，在你重新打开某个网页时提示"你曾经在哪里、什么时候见过这个链接/这段话"，并生成跨源关联的可视化。</p>
+      <p class="why"><b>对本选题</b>："<b>跨来源信息融合 + 隐含关系发现</b>"的轻量示范（2019 年至今仍在维护），可以把它当作"关系发现"这一模块的方法参考。</p>
+    </article>
+
+  </div>
+
+  <h3 class="grp">商业产品与大厂能力（非 GitHub）</h3>
+  <div class="cards">
+
+    <article class="card" data-kg="no" data-stars="0">
+      <header><a class="name" href="https://feedly.com/ai" target="_blank" rel="noopener">Feedly AI / Leo</a>
+        <span class="tags"><span class="nogh">非 GitHub · 不受门槛限制</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">企业级资讯雷达：用一组机器学习模型（威胁、并购、供应链、监管等"概念模型"）对海量来源实时筛选与优先级排序，Leo 作为研究助理生成简报与摘要。</p>
+      <p class="why"><b>对本选题</b>：<b>"重点信息推荐"这一难点的商业化天花板</b>。它的做法是"预定义概念模型 + 用户关注方向"，本质是分类器而非关系推理——你的 KG 应该能给出"为什么这条与那条相关"的路径。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="0">
+      <header><a class="name" href="https://blog.kagi.com/kagi-news" target="_blank" rel="noopener">Kagi News</a>
+        <span class="tags"><span class="nogh">非 GitHub · 不受门槛限制</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">每天读取上千个社区维护的 RSS 源，用 AI 聚成一份"每日简报"，明确标注多视角与来源引用，并可按主题追踪。</p>
+      <p class="why"><b>对本选题</b>：<b>"周期性简报 + 来源可追溯"的最佳实践</b>（每个结论都挂引用），这一点直接对应你报告里"提供可追溯的依据"的要求，值得仿其格式。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="0">
+      <header><a class="name" href="https://reader.readwise.io/" target="_blank" rel="noopener">Readwise Reader</a>
+        <span class="tags"><span class="nogh">非 GitHub · 不受门槛限制</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">"稍后读 + 高亮管理"的组合：把所有来源的阅读内容收进一处，用间隔重复（Daily Review）与 AI 摘要帮助回忆，高亮可回流到笔记工具。</p>
+      <p class="why"><b>对本选题</b>：代表"个人阅读信息"的组织方式——按时间与标签归档，靠回顾机制强化记忆。可作为"信息整理走向个人长期记忆"的一个横向参照。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="0">
+      <header><a class="name" href="https://ground.news/" target="_blank" rel="noopener">Ground News</a>
+        <span class="tags"><span class="nogh">非 GitHub · 不受门槛限制</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">把同一事件的报道按来源的立场与所有权分组对照，用"盲点"提示某条新闻只在某一侧被报道。</p>
+      <p class="why"><b>对本选题</b>：<b>"消息之间的支持与冲突关系"</b>（题目明确列出）最直观的产品化实现；虽然它是人工规则 + 编辑标注而非图谱，但正好说明"冲突关系"是用户真实需求。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="0">
+      <header><a class="name" href="https://support.apple.com/guide/iphone/notification-summaries-iphf9b6b1d3b/ios" target="_blank" rel="noopener">Apple Intelligence 通知摘要 / Slack AI 与 Copilot 摘要</a>
+        <span class="tags"><span class="nogh">非 GitHub · 不受门槛限制</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">操作系统与办公套件级别把通知流、群聊、会议压成一句话摘要（iOS 通知摘要、Slack AI 的频道摘要与线程摘要、Microsoft 365 Copilot 的会议回顾）。</p>
+      <p class="why"><b>对本选题</b>：大厂已把"消息压缩"做成系统默认能力，<b>说明这一层没有创业空间</b>——你必须做它们没做的：跨来源的事件归并与状态更新。</p>
+    </article>
+
+  </div>
+
+  <div class="gap">
+    <h4>竞品空白与选题建议</h4>
+    <ul>
+      <li class="done"><b>已被解决：</b>采集（RSSHub 46k★）、清洗（newspaper3k）、去重聚类（Event Registry、GDELT）、摘要与排序（Kagi News、Feedly Leo、Horizon）、单渠道助手（inbox-zero）、通知压缩（Apple/Slack/Copilot）。</li>
+      <li class="void"><b>空白 1（最大）：面向个人的实体-事件图。</b>GDELT 与 Event Registry 是公共世界的图，不关心"我关注什么、与我何关"；Feedly/Kagi 只排序与摘要，不做关系推理。</li>
+      <li class="void"><b>空白 2：消息间的支持/矛盾关系与状态更新。</b>"旧信息被新信息推翻后如何更新状态"在所有开源/商业产品里都没有显式机制（Ground News 只做到了"展示分歧"）。</li>
+      <li class="void"><b>空白 3：从信息整理走向决策支持几乎无人做。</b>没人把"关注方向 → 实体图 → 影响路径"连起来。</li>
+      <li class="do"><b>建议：</b>核心关系建议设为 <code>Event / Claim / Source / stance(支持·矛盾) / supersedes(推翻)</code>；实验主线 = 同一事件识别 + 冲突检测 + 更新传播；用 GDELT 事件做外部校验，用 Kagi News 式"结论必带来源"做产品规范，并与"Feedly 式分类器 + 摘要"做 A/B 对照。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================ G3 -->
+<section class="topic" id="g3">
+  <div class="topic-head">
+    <h2>选题 3 · GitHub 项目考古学家：开源项目历史与演化分析</h2>
+    <p class="prompt">题目要点：几百上千次 commit/issue/PR/release 分散在历史里；能读懂"现在"，读不懂"为什么变成这样"；要求建立历史记录之间的关联并给出可追溯依据。</p>
+  </div>
+  <div class="topic-note">
+    <b>这是五个选题中竞品格局最清晰的一个：</b>"<b>当前的代码结构图</b>"已经被 2026 年这一批代码知识图谱工具做透了（graphify 126k★、Understand-Anything 86k★、codegraph 74k★，且都支持增量同步）；
+    而"<b>历史的图</b>"——跨版本的时序知识、设计动机抽取、讨论与代码变更的对齐——<b>基本无人做</b>。
+  </div>
+
+  <h3 class="grp">代码知识图谱（2026 年最热的一波）</h3>
+  <div class="cards">
+
+    <article class="card" data-kg="yes" data-stars="126065">
+      <header><a class="name" href="https://github.com/Graphify-Labs/graphify" target="_blank" rel="noopener">Graphify-Labs/graphify</a>
+        <span class="tags"><span class="star">★ 126,065</span><span class="date">创建 2026-04 · 更新 2026-10-13</span><span class="kg yes">● 有 KG</span></span></header>
+      <p class="desc">把代码库连同 docs、SQL schema、配置、PDF 一起解析成<b>可查询的知识图谱</b>：本地确定性 AST 解析 + 图存储，以 skill 形式接入 Claude Code / Cursor / Codex / Gemini CLI（商业站点 graphify.com）。</p>
+      <p class="why"><b>对本选题</b>：目前该赛道星标最高的项目，代表"代码知识图谱"这一波的默认形态。<b>你的差异化必须避开"当前快照"</b>——它完全不处理 Git 历史、Issue 讨论与版本演化。</p>
+    </article>
+
+    <article class="card" data-kg="yes" data-stars="86139">
+      <header><a class="name" href="https://github.com/Egonex-AI/Understand-Anything" target="_blank" rel="noopener">Egonex-AI/Understand-Anything</a>
+        <span class="tags"><span class="star">★ 86,139</span><span class="date">创建 2026-03 · 更新 2026-10-12</span><span class="kg yes">● 有 KG</span></span></header>
+      <p class="desc">"把任何代码库、知识库或文档变成可探索、可搜索、可提问的交互式知识图谱"，面向多家 CLI Agent（Egonex）。</p>
+      <p class="why"><b>对本选题</b>：定位与"理解陌生大型项目"最接近的<b>理解型</b>工具——但它的知识是"此刻的"，不含演化与决策。<b>报告里必须把它写成同类工作并说明你的增量（时间维度）。</b></p>
+    </article>
+
+    <article class="card" data-kg="yes" data-stars="73925">
+      <header><a class="name" href="https://github.com/colbymchenry/codegraph" target="_blank" rel="noopener">colbymchenry/codegraph</a>
+        <span class="tags"><span class="star">★ 73,925</span><span class="date">创建 2026-01 · 更新 2026-10-13</span><span class="kg yes">● 有 KG</span></span></header>
+      <p class="desc">预索引的"语义代码图"：Rust 内核、随代码变更<b>自动同步（增量更新）</b>、纯本地运行，主打用更少 token 给 Agent 更精准的上下文。</p>
+      <p class="why"><b>对本选题</b>：直接回答了题目最后那句"面对活跃项目不断增加的 Commit 和 PR，如何高效维护已有知识"的<b>工程侧</b>——增量索引的设计值得抄；但它维护的是定义/引用图，不是"决策与版本"的知识。</p>
+    </article>
+
+    <article class="card" data-kg="yes" data-stars="46489">
+      <header><a class="name" href="https://github.com/DeusData/codebase-memory-mcp" target="_blank" rel="noopener">DeusData/codebase-memory-mcp</a>
+        <span class="tags"><span class="star">★ 46,489</span><span class="date">创建 2026-02 · 更新 2026-10-13</span><span class="kg yes">● 有 KG</span></span></header>
+      <p class="desc">单静态二进制的 MCP 服务（C 实现）：把代码库索引成<b>持久知识图谱</b>，覆盖 162 种语言、混合 LSP 语义，毫秒级查询，宣称降低 99% token 消耗，适配 45 种 Agent 界面。</p>
+      <p class="why"><b>对本选题</b>：工程实现范本（纯 C、无运行时依赖、混合静态分析）。其"持久图 + 快速查询"的架构正是你需要给历史知识加上的那一层存储。</p>
+    </article>
+
+    <article class="card" data-kg="yes" data-stars="5742">
+      <header><a class="name" href="https://github.com/potpie-ai/potpie" target="_blank" rel="noopener">potpie-ai/potpie</a>
+        <span class="tags"><span class="star">★ 5,742</span><span class="date">更新 2026-10-12</span><span class="kg yes">● 有 KG</span></span></header>
+      <p class="desc">"AI 原生 SDLC 的 Context Graph"：把仓库解析为代码知识图（函数级依赖、文档、PR 上下文），通过 API 供 Agent 做仓库问答与影响分析。</p>
+      <p class="why"><b>对本选题</b>：少见的把 <b>PR 上下文</b>也纳入图的开源项目——已经向"历史/讨论"迈了半步，值得精读它如何把 PR 挂到代码实体上。</p>
+    </article>
+
+    <article class="card" data-kg="mix" data-stars="49525">
+      <header><a class="name" href="https://github.com/Aider-AI/aider" target="_blank" rel="noopener">Aider-AI/aider</a>
+        <span class="tags"><span class="star">★ 49,525</span><span class="date">更新 2026-05-22</span><span class="kg mix">◐ 混合</span></span></header>
+      <p class="desc">终端 AI 结对编程工具；其核心机制 <b>repo map</b> 用 tree-sitter 抽取符号与调用关系，按图中心性/引用热度排序，在 token 预算内增量维护一张"代码地图"。</p>
+      <p class="why"><b>对本选题</b>："轻量代码图 + 上下文预算"的经典实现。若你的系统要"按问题动态取哪部分知识"，它的排序策略（谁被引用得多就优先）可直接借鉴。</p>
+    </article>
+
+  </div>
+
+  <h3 class="grp">代码结构可视化（前一代）与仓库上下文打包</h3>
+  <div class="cards">
+
+    <article class="card" data-kg="yes" data-stars="16468">
+      <header><a class="name" href="https://github.com/CoatiSoftware/Sourcetrail" target="_blank" rel="noopener">CoatiSoftware/Sourcetrail</a>
+        <span class="tags"><span class="star">★ 16,468</span><span class="date">更新 2021-12-13（已归档）</span><span class="kg yes">● 有 KG</span></span></header>
+      <p class="desc">交互式源码浏览器：跨语言索引出符号、引用、继承与调用图，用图形界面让人"点着看"依赖关系。</p>
+      <p class="why"><b>对本选题</b>：代码结构图的"史前史"。虽然停更，它的交互设计（从任一点出发双向探索）至今是最好的，值得作为你系统可视化交互的参照。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="28818">
+      <header><a class="name" href="https://github.com/yamadashy/repomix" target="_blank" rel="noopener">yamadashy/repomix</a>
+        <span class="tags"><span class="star">★ 28,818</span><span class="date">更新 2026-10-11</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">把整个仓库打包成单个 LLM 友好文件（目录树、内容、token 统计、压缩与过滤）。</p>
+      <p class="why"><b>对本选题</b>：<b>反向参照</b>——"如果只需要让 LLM 读一遍，就不需要知识图谱"。这恰好是你写"为什么必须显式表示"这一节的对照组：全量投喂只能解决"当前"，解决不了"历史"。相反，repomix 可以作为你历史语料（docs/issues 导出）的打包工具。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="34602">
+      <header><a class="name" href="https://github.com/backstage/backstage" target="_blank" rel="noopener">backstage/backstage</a>
+        <span class="tags"><span class="star">★ 34,602</span><span class="date">更新 2026-10-13</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">Spotify 开源的开发者门户框架：以 Software Catalog（YAML 实体模型：Component / API / System / Domain / Owner）+ TechDocs 描述整个组织的软件资产与依赖。</p>
+      <p class="why"><b>对本选题</b>：<b>组织级"软件知识模型"的工业标准</b>。它的实体模型（谁拥有、依赖谁、属于哪个系统）可直接借用来定义你自己的本体；差别在于它描述"组织资产"，不描述"项目演化"。</p>
+    </article>
+
+  </div>
+
+  <h3 class="grp">Git 历史挖掘、决策记录与项目画像</h3>
+  <div class="cards">
+
+    <article class="card" data-kg="no" data-stars="5730">
+      <header><a class="name" href="https://github.com/npryce/adr-tools" target="_blank" rel="noopener">npryce/adr-tools</a> + <a class="name" href="https://github.com/thomvaill/log4brains" target="_blank" rel="noopener">thomvaill/log4brains</a>
+        <span class="tags"><span class="star">★ 5,730 / ★ 1,602</span><span class="date">更新 2024-04-25 / 2024-12-17</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">架构决策记录（ADR）工具链：把"为什么这样设计"写成编号、可版本化的短文档，log4brains 还能把 ADR 发布成带时间线的站点。ADR 格式（状态 / 背景 / 决策 / 后果）已成为社区惯例。</p>
+      <p class="why"><b>对本选题——最重要的一条：</b>题目里最难的一问是"<b>决策理由抽取</b>"，并反问"如何区分真实原因与模型推测"。<b>ADR 就是"真实理由"存在的地方</b>，可以当作动机抽取的金标准语料；同时"ADR 覆盖率低"本身就是你可以论证的研究点（大多数项目没有 ADR）。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="2640">
+      <header><a class="name" href="https://github.com/adamtornhill/code-maat" target="_blank" rel="noopener">adamtornhill/code-maat</a>
+        <span class="tags"><span class="star">★ 2,640</span><span class="date">更新 2025-07-03</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">VCS 挖掘的经典命令行工具：从 git/svn 日志计算变更耦合（哪些文件总是一起改）、hotspot（高频改动 × 高复杂度）、作者分布与时间序列。</p>
+      <p class="why"><b>对本选题</b>："<b>代码-时间-人</b>"三者的量化基础，可用来生成候选的"隐含关系"（如"这两个模块总是在同一批 PR 里被改"）作为图谱的边证据。Adam Tornhill 也是 CodeScene 的作者。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="2811">
+      <header><a class="name" href="https://github.com/src-d/hercules" target="_blank" rel="noopener">src-d/hercules</a>（已停更）
+        <span class="tags"><span class="star">★ 2,811</span><span class="date">更新 2023-02-07</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">Git 历史的深度分析（Go）：开发者-文件-时间的耦合与演化，包括"开发者之间的知识传递"、文件生命周期的变更序列等，输出可导入 UAST 的分析结果。</p>
+      <p class="why"><b>对本选题</b>：把"项目演化"当作可计算对象的最完整尝试之一。虽然 2023 年后停更，它的分析维度清单可以直接当作你本体里的<b>边类型清单</b>。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="2084">
+      <header><a class="name" href="https://github.com/src-d/gitbase" target="_blank" rel="noopener">src-d/gitbase</a>（已停更）
+        <span class="tags"><span class="star">★ 2,084</span><span class="date">更新 2023-10-19</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">把 Git 仓库变成<b>可用 SQL 查询</b>的数据库：commit、文件、blame、引用等被规范化为表，可用标准 SQL 做跨仓库的历史分析。</p>
+      <p class="why"><b>对本选题</b>："<b>把历史结构化</b>"的另一种路线（关系表 vs 图）。适合作为"结构化但不是知识图谱"的中间对照组，也提示你：图谱的价值要体现在<b>多跳与类型化关系</b>上，而不是"能查询"。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="2969">
+      <header><a class="name" href="https://github.com/erikbern/git-of-theseus" target="_blank" rel="noopener">erikbern/git-of-theseus</a>
+        <span class="tags"><span class="star">★ 2,969</span><span class="date">更新 2023-11-25</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">分析代码库随时间的"生长与删除"：按文件年龄分层统计行数、代码存活率、作者贡献随时间的构成（stacked area 图）。</p>
+      <p class="why"><b>对本选题</b>：把"版本"变成可度量的对象（代码存活曲线）。这种<b>时间序列视角</b>可以与你的图查询互补，用于"某模块的量级何时开始膨胀"。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="13168">
+      <header><a class="name" href="https://github.com/acaudwell/Gource" target="_blank" rel="noopener">acaudwell/Gource</a>
+        <span class="tags"><span class="star">★ 13,168</span><span class="date">更新 2026-03-06</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">把版本控制历史渲染成动画（文件在空间中生长、作者发光），支持多仓库合并与自定义着色。</p>
+      <p class="why"><b>对本选题</b>：<b>汇报 PPT 的利器</b>——直观展示"项目演化"这一抽象概念，也能作为 demo 的可视化组成部分。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="7008">
+      <header><a class="name" href="https://github.com/git-quick-stats/git-quick-stats" target="_blank" rel="noopener">git-quick-stats</a>
+        <span class="tags"><span class="star">★ 7,008</span><span class="date">更新 2026-04-18</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">纯 shell 的 Git 统计菜单：按作者、日期、分支、提交类型汇总仓库活动。</p>
+      <p class="why"><b>对本选题</b>：轻量基线——"统计"与"理解"的区别在哪里，这个工具就是最好的说明。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="12298">
+      <header><a class="name" href="https://github.com/orhun/git-cliff" target="_blank" rel="noopener">orhun/git-cliff</a>
+        <span class="tags"><span class="star">★ 12,298</span><span class="date">更新 2026-09-18</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">高度可配置的 changelog / Release Notes 生成器，基于 Conventional Commits 规范，支持模板与自定义解析器。</p>
+      <p class="why"><b>对本选题</b>：把提交历史变成<b>半结构化的版本知识</b>。建议把它的输出当作你的"Release 事件"抽取入口（feat/fix/refactor 就是现成的变更类型标签）。</p>
+    </article>
+
+  </div>
+
+  <h3 class="grp">商业产品、档案与数据集（非 GitHub）</h3>
+  <div class="cards">
+
+    <article class="card" data-kg="mix" data-stars="0">
+      <header><a class="name" href="https://deepwiki.com/" target="_blank" rel="noopener">Cognition DeepWiki</a>
+        <span class="tags"><span class="nogh">非 GitHub · 不受门槛限制</span><span class="kg mix">◐ 混合</span></span></header>
+      <p class="desc">Devin 团队推出的免费网页服务：把任意公开仓库的 <code>github.com</code> 换成 <code>deepwiki.com</code>，即自动生成架构图、模块文档并链接回源码，还支持对仓库提问（Cognition / Devin Wiki 的公开版）。</p>
+      <p class="why"><b>对本选题——必须做对比的对手：</b>它证明了"用 LLM 读懂一个仓库"已免费可得。<b>但它的产物是一次性生成的 wiki 文本</b>，不是可持续查询/更新的显式图谱，也<b>完全不做 Issue/Commit/Release 的时间推理</b>。你的报告应当直接以它为 baseline（"DeepWiki 式一次性生成 vs 可查询的时序知识图"）。</p>
+    </article>
+
+    <article class="card" data-kg="yes" data-stars="0">
+      <header><a class="name" href="https://www.softwareheritage.org/" target="_blank" rel="noopener">Software Heritage + Graph Dataset</a>
+        <span class="tags"><span class="nogh">非 GitHub · 不受门槛限制</span><span class="kg yes">● 有 KG</span></span></header>
+      <p class="desc">全球最大的源代码公共档案（数十亿文件、上亿次提交、数千万项目），以<b>去重的 Merkle DAG</b> 表示文件内容、目录、提交与仓库快照的完整演化，附带公开图数据集（AWS Open Data）与 API。</p>
+      <p class="why"><b>对本选题</b>：<b>理论支柱 + 数据来源</b>。"软件的演化本身就是一张有向无环图，且可以完全去重"——这是你论证"显式表示优于文本检索"最有力的引用；其数据集可用于跨项目的历史分析实验。</p>
+    </article>
+
+    <article class="card" data-kg="mix" data-stars="0">
+      <header><a class="name" href="https://codescene.com/" target="_blank" rel="noopener">CodeScene</a>
+        <span class="tags"><span class="nogh">非 GitHub · 不受门槛限制</span><span class="kg mix">◐ 混合</span></span></header>
+      <p class="desc">商业化的"行为代码分析"平台：用版本历史计算 Code Health、hotspot、变更耦合、知识流失与团队协作风险，并给出"改哪里风险高、该让谁改"的可执行建议。</p>
+      <p class="why"><b>对本选题</b>：<b>"历史数据 → 工程决策"的商业标杆</b>（Adam Tornhill 的产品化）。它证明了历史的量化分析有真实价值；但它的输出是评分与清单，不是可追问的历史知识——你在"为什么"层面仍有空间。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="0">
+      <header><a class="name" href="https://openhub.net/" target="_blank" rel="noopener">Open Hub（原 Ohloh，Black Duck）</a>
+        <span class="tags"><span class="nogh">非 GitHub · 不受门槛限制</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">老牌开源项目分析目录：按项目统计语言构成、贡献者、提交活跃度、许可证与依赖，并提供 REST API。</p>
+      <p class="why"><b>对本选题</b>："<b>项目画像</b>"的历史形态（已边缘化，站点活跃度低）。可作为一个引文：单靠统计画像无法回答"为什么"。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="0">
+      <header><a class="name" href="https://www.gharchive.org/" target="_blank" rel="noopener">GH Archive / GHTorrent</a>
+        <span class="tags"><span class="nogh">非 GitHub · 不受门槛限制</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">GitHub 公共事件流的长期归档（GH Archive 按时段存成 JSON，可经 BigQuery 查询）与 GHTorrent 的研究数据集（MySQL/MongoDB 结构化导出）。</p>
+      <p class="why"><b>对本选题</b>：若要做"跨项目"的演化研究（而非单仓库），这是唯一的批量数据来源；也可用于构造"活跃项目知识维护"的实验负载。</p>
+    </article>
+
+  </div>
+
+  <div class="gap">
+    <h4>竞品空白与选题建议</h4>
+    <ul>
+      <li class="done"><b>已被解决（而且做得很好）：</b>"当前代码的结构图"——graphify 126k★ / Understand-Anything 86k★ / codegraph 74k★ / codebase-memory-mcp 46k★，全都支持增量同步、本地推理、Agent 接入；"一次性读懂仓库"——DeepWiki 免费。Git 历史的统计与可视化——Gource、git-of-theseus、git-quick-stats、code-maat。</li>
+      <li class="void"><b>空白 1（最关键）：时间维度。</b>上述代码图谱工具全是"当前快照的图"，没有 commit/PR/issue 的<b>时序版本链</b>，无法回答"这个模块何时、为何变成现在这样"。</li>
+      <li class="void"><b>空白 2：决策理由抽取。</b>题目自己点出的难点：如何从开发讨论里抽设计动机，并区分真实原因与模型推测。竞品全部回避了这个问题。可用的"真值"来源：ADR（adr-tools/log4brains）、PR 描述、RFC、Issue 里的 maintainer 讨论。</li>
+      <li class="void"><b>空白 3：代码变更与自然语言记录的对齐。</b>potpie 只迈了半步（挂 PR 上下文）；没人做"issue 讨论 → 实体 → 代码 diff → 后续版本"的闭环追踪。</li>
+      <li class="void"><b>空白 4：死代码/被删除功能的考古。</b>没有工具能解释"为什么这个功能被删"。这是一条极好的实验主线（变更类型：引入/修改/删除/回滚 + 理由）。</li>
+      <li class="do"><b>建议：</b>把项目名与主攻方向明确为"<b>历史的图</b>"而非"现在的图"——(实体, 属性, 版本区间) 的时序表示 + 动机抽取 + 与 DeepWiki/纯 RAG 的对照评测（评测题如"X 何时引入""Y 为什么被删""哪次重构解决了 Z"）。这个选题的<b>竞品空白最清晰、可引用素材最多</b>，推荐优先考虑。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================ G4 -->
+<section class="topic" id="g4">
+  <div class="topic-head">
+    <h2>选题 4 · 个人数字人：基于个人经历、知识与行为记忆的数字分身</h2>
+    <p class="prompt">题目要点：仅靠少量资料让 LLM 扮演一个人 → 记忆缺失、经历混淆、偏好不一致、虚构个人事实；数字人应"理解这个人经历过什么"，而非只模仿说话风格。</p>
+  </div>
+  <div class="topic-note">
+    <b>赛道现状：</b>风格克隆（WeClone 18k★）、记忆写入（mem0 / memU / MIRIX）、手动图谱（Logseq 45k★）、笔记向量化（Smart Connections）都已有成熟方案；
+    <b>空白在于"经历/事件"的统一表示、跨源同一经历的对齐、长期一致性与遗忘机制，以及可验证的评测</b>。
+    另外要注意一个警示案例：<b>Rewind → Limitless 已于 2025-12-19 关停</b>。
+  </div>
+
+  <h3 class="grp">"数字分身"主线</h3>
+  <div class="cards">
+
+    <article class="card" data-kg="no" data-stars="18291">
+      <header><a class="name" href="https://github.com/xming521/WeClone" target="_blank" rel="noopener">xming521/WeClone</a>
+        <span class="tags"><span class="star">★ 18,291</span><span class="date">更新 2026-10-09</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">中文社区最流行的"数字分身"项目：从微信等聊天记录出发做数据清洗与微调，把 LLM 调成"说话像你"，再绑定到聊天机器人上线。</p>
+      <p class="why"><b>对本选题——最佳反例：</b>它克隆的是<b>语言风格</b>而非<b>个人经历</b>，正对应题目批评的"记忆缺失、经历混淆、虚构个人事实"。你的实验可以直接用它的输出做失败案例对比。</p>
+    </article>
+
+    <article class="card" data-kg="mix" data-stars="15688">
+      <header><a class="name" href="https://github.com/mindverse/Second-Me" target="_blank" rel="noopener">mindverse/Second-Me</a>
+        <span class="tags"><span class="star">★ 15,688</span><span class="date">更新 2025-09-30</span><span class="kg mix">◐ 混合</span></span></header>
+      <p class="desc">"训练你的 AI 自我"：主张 AI 应当<b>放大你</b>而不是替代你，提供个人数据训练 + 分层记忆 + 推理加速的完整栈（含论文与 Web 端），支持本地部署。</p>
+      <p class="why"><b>对本选题</b>：与选题同构度最高的开源项目之一（"个人的 AI 自我"）。它的分层记忆设计（L1 短期 / L2 场景 / L3 全局）值得对照；但更新已放缓，且"经历"层同样不够显式。</p>
+    </article>
+
+    <article class="card" data-kg="mix" data-stars="14537">
+      <header><a class="name" href="https://github.com/NevaMind-AI/memU" target="_blank" rel="noopener">NevaMind-AI/memU</a>
+        <span class="tags"><span class="star">★ 14,537</span><span class="date">更新 2026-10-13</span><span class="kg mix">◐ 混合</span></span></header>
+      <p class="desc">"个人记忆，以 Wiki 形式存储"：跨会话、跨 Agent、跨设备共享的 LLM wiki，自动从 Agent 历史中蒸馏出可复用的<b>个人技能</b>与知识页。</p>
+      <p class="why"><b>对本选题</b>：把"知识 + 技能"分开处理是一个好设计（对应你的"个人掌握哪些知识"这一问）；Wiki 形式则保证了可读可审计。</p>
+    </article>
+
+    <article class="card" data-kg="mix" data-stars="3451">
+      <header><a class="name" href="https://github.com/Mirix-AI/MIRIX" target="_blank" rel="noopener">Mirix-AI/MIRIX</a>
+        <span class="tags"><span class="star">★ 3,451</span><span class="date">更新 2026-10-08</span><span class="kg mix">◐ 混合</span></span></header>
+      <p class="desc">多智能体个人助手：持续捕获屏幕活动（视觉 + 文本），按 episodic / semantic / procedural / resource / knowledge-vault 分层固化，再由不同 Agent 负责固化、检索与反思。</p>
+      <p class="why"><b>对本选题</b>：它的"记忆类型分层 + 专职 Agent 分工"直接对应你需要定义的本体顶层类（经历 / 知识 / 流程 / 资源 / 关系），是选题 1 与选题 4 的公共参考。</p>
+    </article>
+
+    <article class="card" data-kg="mix" data-stars="48994">
+      <header><a class="name" href="https://github.com/HKUDS/nanobot" target="_blank" rel="noopener">HKUDS/nanobot</a>
+        <span class="tags"><span class="star">★ 48,994</span><span class="date">更新 2026-10-13</span><span class="kg mix">◐ 混合</span></span></header>
+      <p class="desc">超轻量自托管个人 AI Agent 框架（Python + WebUI）：工具调用、记忆、MCP、多智能体工作流、自动化与聊天应用接入。</p>
+      <p class="why"><b>对本选题</b>：可以当作"数字人"的<b>运行时骨架</b>——它给出记忆与工具的标准接口，你只需要替换/接管记忆模块为知识图谱。</p>
+    </article>
+
+    <article class="card" data-kg="mix" data-stars="47379">
+      <header><a class="name" href="https://github.com/zhayujie/CowAgent" target="_blank" rel="noopener">zhayujie/CowAgent</a>
+        <span class="tags"><span class="star">★ 47,379</span><span class="date">更新 2026-10-13</span><span class="kg mix">◐ 混合</span></span></header>
+      <p class="desc">中文社区最流行的开源个人 AI 助手：多渠道接入（微信/飞书/网页等）、规划任务、工具与技能、随对话自演化的记忆与知识、多模型多智能体。</p>
+      <p class="why"><b>对本选题</b>：现成的"个人助手外壳 + 记忆接口"，中文文档与生态最全；同样，记忆是文本化的，没有经历结构。</p>
+    </article>
+
+    <article class="card" data-kg="mix" data-stars="6764">
+      <header><a class="name" href="https://github.com/liliMozi/openhanako" target="_blank" rel="noopener">liliMozi/openhanako</a>
+        <span class="tags"><span class="star">★ 6,764</span><span class="date">更新 2026-10-12</span><span class="kg mix">◐ 混合</span></span></header>
+      <p class="desc">带记忆、人格与自主性的个人 AI Agent。</p>
+      <p class="why"><b>对本选题</b>：说明"人格 + 记忆"已是个人 Agent 的标配功能——所以你的增量绝不能在"有人格记忆"上，而必须在<b>可验证的长期一致性与经历关系</b>上。</p>
+    </article>
+
+    <article class="card" data-kg="mix" data-stars="2889">
+      <header><a class="name" href="https://github.com/moltis-org/moltis" target="_blank" rel="noopener">moltis-org/moltis</a>
+        <span class="tags"><span class="star">★ 2,889</span><span class="date">更新 2026-09-22</span><span class="kg mix">◐ 混合</span></span></header>
+      <p class="desc">Rust 单二进制的"安全持久化个人 Agent 服务器"：沙箱执行、多模型、语音、记忆，接入 Telegram / WhatsApp / Discord / Teams 与 MCP 工具。</p>
+      <p class="why"><b>对本选题</b>：本地优先与安全边界的设计（个人数据敏感）值得借鉴——正是数字人系统绕不开的工程前提。</p>
+    </article>
+
+    <article class="card" data-kg="mix" data-stars="2029">
+      <header><a class="name" href="https://github.com/isair/jarvis" target="_blank" rel="noopener">isair/jarvis</a>
+        <span class="tags"><span class="star">★ 2,029</span><span class="date">更新 2026-10-13</span><span class="kg mix">◐ 混合</span></span></header>
+      <p class="desc">桌面端私有本地 AI 助手（macOS/Windows/Linux）：语音与文字对话、个人记忆、听写与 MCP 工具，可完全离线（Ollama）。</p>
+      <p class="why"><b>对本选题</b>：全本地运行的个人助理实现，适合做"隐私优先的数字人"的工程参照。</p>
+    </article>
+
+  </div>
+
+  <h3 class="grp">个人知识管理（人工图谱 vs 自动图谱）</h3>
+  <div class="cards">
+
+    <article class="card" data-kg="mix" data-stars="45220">
+      <header><a class="name" href="https://github.com/logseq/logseq" target="_blank" rel="noopener">logseq/logseq</a>
+        <span class="tags"><span class="star">★ 45,220</span><span class="date">更新 2026-10-13</span><span class="kg mix">◐ 混合</span></span></header>
+      <p class="desc">隐私优先的本地知识管理平台：块级双向链接、大纲与日志（journal）、内置 graph 视图，所有数据是本地纯文本。</p>
+      <p class="why"><b>对本选题</b>：<b>人工维护的知识图谱的最大开源实践</b>（也是"手动版基线"）。你可以用它做对照：人工链接质量高但无法规模化——由此论证自动抽取 + 实体对齐的增量价值。</p>
+    </article>
+
+    <article class="card" data-kg="yes" data-stars="15498">
+      <header><a class="name" href="https://github.com/AgriciDaniel/claude-obsidian" target="_blank" rel="noopener">AgriciDaniel/claude-obsidian</a>
+        <span class="tags"><span class="star">★ 15,498</span><span class="date">创建 2026-04 · 更新 2026-09-10</span><span class="kg yes">● 有 KG</span></span></header>
+      <p class="desc">面向 Obsidian + Claude Code 的"自组织第二大脑"：丢入任何材料，由 LLM 阅读、互相链接、归档成一张<b>相连的 Markdown 知识图</b>（数据归你所有）。</p>
+      <p class="why"><b>对本选题</b>：<b>"自动建图 + 人可读落地"</b>的最佳实践形态，与 basic-memory 同源思路（第 0/1 组）；可作为你数字人系统的"知识层"实现范式。</p>
+    </article>
+
+    <article class="card" data-kg="mix" data-stars="5500">
+      <header><a class="name" href="https://github.com/brianpetro/obsidian-smart-connections" target="_blank" rel="noopener">brianpetro/obsidian-smart-connections</a>
+        <span class="tags"><span class="star">★ 5,500</span><span class="date">更新 2026-10-10</span><span class="kg mix">◐ 混合</span></span></header>
+      <p class="desc">Obsidian 插件：本地嵌入模型找出"相关笔记"并以图 + 列表呈现，零配置、无 API 依赖。</p>
+      <p class="why"><b>对本选题</b>："笔记库上的向量关联"主流形态，也是"纯向量 vs 显式关系"对照中最方便取的 baseline。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="7827">
+      <header><a class="name" href="https://github.com/logancyang/obsidian-copilot" target="_blank" rel="noopener">logancyang/obsidian-copilot</a>
+        <span class="tags"><span class="star">★ 7,827</span><span class="date">更新 2026-10-13</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">在 Obsidian 库上跑 Agent（可接多种本地/云端模型与 CLI Agent），支持对笔记库问答与批量改写。</p>
+      <p class="why"><b>对本选题</b>：个人笔记问答的标准实现；对"跨经历推理"无能为力。</p>
+    </article>
+
+    <article class="card" data-kg="mix" data-stars="77281">
+      <header><a class="name" href="https://github.com/AppFlowy-IO/AppFlowy" target="_blank" rel="noopener">AppFlowy-IO/AppFlowy</a>
+        <span class="tags"><span class="star">★ 77,281</span><span class="date">更新 2026-10-08</span><span class="kg mix">◐ 混合</span></span></header>
+      <p class="desc">开源 Notion 替代（77k★）：本地数据自持、支持数据库/看板/文档 + AI 能力，强调"数据不交给别人"。</p>
+      <p class="why"><b>对本选题</b>：个人资料库的产品化形态与本地优先的架构参考；它不是数字人，但可以是数字人的"数据底座"。</p>
+    </article>
+
+    <article class="card" data-kg="mix" data-stars="1642">
+      <header><a class="name" href="https://github.com/karlicoss/HPI" target="_blank" rel="noopener">karlicoss/HPI + promnesia</a>
+        <span class="tags"><span class="star">★ 1,642 / ★ 1,902</span><span class="date">更新 2026-10-10 / 2026-09-12</span><span class="kg mix">◐ 混合</span></span></header>
+      <p class="desc">个人多源数据的统一 Python 访问层 + 跨源关联提示（详见选题 2）：把日历、邮件、消息、浏览历史、照片元数据等统一成一套可查询对象模型。</p>
+      <p class="why"><b>对本选题</b>：<b>跨平台/跨模态信息融合</b>（题目明确列出的难点）最现实的起点——先有统一的数据模型，才谈得上"经历"的对齐。</p>
+    </article>
+
+  </div>
+
+  <h3 class="grp">商业产品、概念祖先与标准（非 GitHub）</h3>
+  <div class="cards">
+
+    <article class="card" data-kg="yes" data-stars="0">
+      <header><a class="name" href="https://www.microsoft.com/en-us/research/project/mylifebits/" target="_blank" rel="noopener">MyLifeBits（Microsoft Research, 1998–2007）</a>
+        <span class="tags"><span class="nogh">非 GitHub · 不受门槛限制</span><span class="kg yes">● 有 KG</span></span></header>
+      <p class="desc">Gordon Bell 与 Jim Gemmell 主持的"人生日志"研究：把照片、邮件、文档、录音、网页访问等全部数字化，建立可检索的个人记忆库，并探索标注、时间线、关联与隐私问题（Vannevar Bush 的 Memex 的一次真实实现）。</p>
+      <p class="why"><b>对本选题——学术祖先：</b>它几乎定义了本选题的全部难点（采集、检索、长期保存、隐私、价值）。<b>报告引言引用它 + 说明"二十年后仍未解决的问题是结构化表示与推理"</b>，会非常有说服力。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="0">
+      <header><a class="name" href="https://rewind.ai/what-happened-to-rewind/" target="_blank" rel="noopener">Rewind → Limitless（已关停）</a>
+        <span class="tags"><span class="nogh">非 GitHub · 不受门槛限制</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">Rewind AI 以"给人类完美记忆"为目标，记录并索引你在电脑上看到/听到的一切并支持 GPT 式追问；2024 年改名 Limitless 转向可穿戴记录设备（Pendant），2025 年被 Meta 收购，<b>服务已于 2025-12-19 关停</b>，Rewind 等非 Pendant 功能下线。</p>
+      <p class="why"><b>对本选题——最重要的警示：</b>这个赛道最有名的玩家死了。<b>单纯"全量记录 + 检索"在隐私、成本与真实价值上都难以为继</b>——这正好把"显式知识带来的可验证价值"推到论证的中心位置，也是你写"研究意义"的最佳论据。</p>
+    </article>
+
+    <article class="card" data-kg="mix" data-stars="0">
+      <header><a class="name" href="https://www.personal.ai/" target="_blank" rel="noopener">Personal AI</a>
+        <span class="tags"><span class="nogh">非 GitHub · 不受门槛限制</span><span class="kg mix">◐ 混合</span></span></header>
+      <p class="desc">商业产品：为个人维护一个独立的"记忆模型"，主张 AI 只从<b>你的记忆</b>出发回答，并支持把个人记忆授权给他人或 Agent 使用。（描述基于公开资料，官网为 JS 渲染未能抓取全文。）</p>
+      <p class="why"><b>对本选题</b>：它把"个人记忆的所有权与授权"做成了产品卖点——这是你系统设计里"获得授权的情况下使用记忆"（题干原话）的商业对照。</p>
+    </article>
+
+    <article class="card" data-kg="yes" data-stars="0">
+      <header><a class="name" href="https://solidproject.org/" target="_blank" rel="noopener">Solid（Personal Data Pods）</a>
+        <span class="tags"><span class="nogh">非 GitHub · 不受门槛限制</span><span class="kg yes">● 有 KG</span></span></header>
+      <p class="desc">Tim Berners-Lee 发起的个人数据项目：用 RDF / Linked Data 把个人数据放进用户自有的 Pod，通过标准化的本体（如 FOAF、vCard、schema.org）与应用解耦，实现"数据属于个人、应用按授权访问"。</p>
+      <p class="why"><b>对本选题</b>：<b>"个人数据的知识图谱"最标准的方案</b>——若你的本体想有引用依据、想谈互操作与授权，直接引用 Solid 的 RDF 模型与 WebID/ACL 机制，比自创格式更有说服力。</p>
+    </article>
+
+    <article class="card" data-kg="yes" data-stars="0">
+      <header><a class="name" href="https://pkg.ifi.uzh.ch/" target="_blank" rel="noopener">Personal Knowledge Graphs（研究议程 / PKD workshop）</a>
+        <span class="tags"><span class="nogh">非 GitHub · 不受门槛限制</span><span class="kg yes">● 有 KG</span></span></header>
+      <p class="desc">学术界对"个人知识图谱（PKG）"的系统讨论（ISWC/ESWC 相关 workshop 与综述）：定义 PKG 与通用 KG 的区别、构建方式（手工/自动/混合）、个人数据的异构性与隐私约束、以及评估困难。</p>
+      <p class="why"><b>对本选题</b>：<b>理论框架来源</b>。报告里"我们构建的是个人知识图谱而非通用 KG"这一论断，以及"为什么个人场景更难"（数据私有、无标注、隐私敏感、评估缺少 ground truth）都需要它来支撑。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="0">
+      <header><a class="name" href="https://www.hereafter.ai/" target="_blank" rel="noopener">Delphi / HereAfter AI / Replika / Character.AI</a>
+        <span class="tags"><span class="nogh">非 GitHub · 不受门槛限制</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">"数字人格"产品谱系：Delphi 与 HereAfter 用访谈/语音克隆构建可对话的"某个人"；Replika、Character.AI 做角色陪伴。</p>
+      <p class="why"><b>对本选题</b>：<b>反面对照组</b>——它们证明"扮演风格/人格"容易做到（也不缺市场），而<b>保证个人事实与经历的一致性极难</b>，且一旦出现虚构就是在消费用户的情感。这正好是你要用结构化记忆解决的问题。</p>
+    </article>
+
+  </div>
+
+  <div class="gap">
+    <h4>竞品空白与选题建议</h4>
+    <ul>
+      <li class="done"><b>已被解决：</b>数据导入与统一访问（HPI）、风格克隆（WeClone 18k★）、记忆写入/去重/分层（mem0、memU、MIRIX、Second-Me）、笔记向量化（Smart Connections）、自动建图（claude-obsidian、basic-memory）、人工图谱（Logseq 45k★）、隐私本地运行（moltis、jarvis）。</li>
+      <li class="void"><b>空白 1：缺"经历/事件"层面的统一表示。</b>现有记忆都是"条目/块/事实"，没有 <code>(人物, 事件, 时间, 地点, 项目, 技能, 偏好)</code> 的联合本体来表示"我经历过什么"。</li>
+      <li class="void"><b>空白 2：跨源同一经历的对齐。</b>同一次旅行同时出现在日历、照片、聊天、支付记录里——没人做这种实体/事件对齐（HPI 只是把数据放在一起，不做对齐）。</li>
+      <li class="void"><b>空白 3：长期一致性与遗忘机制缺失。</b>题目点到的"长期记忆的更新与遗忘"在开源界几乎是空白；也没有"个人事实的冲突检测/来源信任度"。</li>
+      <li class="void"><b>空白 4：没有评测。</b>题干要求"通过实验展示结构化长期记忆优于普通 LLM/RAG"，但公开的个人经历问答集几乎不存在——需要自己构造（可用"同一经历的多次记录"作为一致性检验集）。</li>
+      <li class="do"><b>建议：</b>以"经历事件"为主键（event-centric，而非 document-centric），所有记忆挂到事件上并标注来源与时效；评测三组基线 = 纯 LLM（无记忆）/ 向量 RAG / 你的知识图谱，指标选<b>跨事件推理、长期一致性（同一事实多次问必须一致）、个人知识复用率</b>；同时把授权与隐私设计写进系统（引用 Solid 与 PKG 议程）。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================ G5 -->
+<section class="topic" id="g5">
+  <div class="topic-head">
+    <h2>选题 5 · 股票量化情报：多源市场信息融合与投资研究系统</h2>
+    <p class="prompt">题目要点：信息分散、更新频繁、实体关系密集、时间敏感；要从"公司/行业/产品/供应链/事件/财务"的关系中做跨公司、跨时间分析；要避免回测中的未来信息泄露。</p>
+  </div>
+  <div class="topic-note">
+    <b>赛道现状：</b>数据接入、金融 LLM、Agent 流水线、量化研究自动化、回测引擎全都有强对手（OpenBB 74k★、TradingAgents 111k★、qlib 49k★、FinGPT 21k★），知识图谱框架有 KAG/OpenSPG（9.1k/2.3k★）+ FIBO 本体标准。
+    <b>空白在于"把公司-产业-供应链-事件融成一张持续更新、公开可复现的知识网络"，以及 point-in-time 对齐与影响路径的可解释性评测。</b>
+  </div>
+
+  <h3 class="grp">金融知识图谱与知识增强框架</h3>
+  <div class="cards">
+
+    <article class="card" data-kg="yes" data-stars="9093">
+      <header><a class="name" href="https://github.com/OpenSPG/KAG" target="_blank" rel="noopener">OpenSPG/KAG（蚂蚁集团）</a>
+        <span class="tags"><span class="star">★ 9,093</span><span class="date">更新 2026-01-28</span><span class="kg yes">● 有 KG</span></span></header>
+      <p class="desc">知识增强生成框架：<b>schema 约束</b>的知识构建 + 逻辑形式求解（logical-form guided reasoning），明确针对两个问题——"向量 RAG 的语义相似度不精确"与"OpenIE 式 GraphRAG 引入的噪声"，支持多跳事实问答与专业垂直领域落地（蚂蚁 / OpenKG 出品，配套论文 arXiv:2409.13731）。</p>
+      <p class="why"><b>对本选题——最该精读的一个：</b>题干要求"通过定义本体、规则、Schema 等方式进行显式知识表示"，KAG 就是这句话的工程化答案；其"<b>schema 约束抽取</b>（而不是让 LLM 自由 OpenIE）"这一思路，可以直接作为你知识抽取模块的方法论，也是你要对比 GraphRAG 的关键差异点。</p>
+    </article>
+
+    <article class="card" data-kg="yes" data-stars="2269">
+      <header><a class="name" href="https://github.com/OpenSPG/openspg" target="_blank" rel="noopener">OpenSPG/openspg</a>
+        <span class="tags"><span class="star">★ 2,269</span><span class="date">更新 2025-07-05</span><span class="kg yes">● 有 KG</span></span></header>
+      <p class="desc">KAG 之下的知识图谱引擎：SPG（Semantic-enhanced Programmable Graph）框架，提供领域模型约束的知识建模、事实与逻辑融合表示，原生支撑 KAG。</p>
+      <p class="why"><b>对本选题</b>：<b>本体建模的现成工具链</b>——你可以用 SPG 定义"公司/行业/产品/供应关系/事件"的 schema，而不是用朴素三元组硬堆（这也正对应题干说的"定义本体、规则、Schema"）。</p>
+    </article>
+
+    <article class="card" data-kg="yes" data-stars="3133">
+      <header><a class="name" href="https://github.com/jm199504/Financial-Knowledge-Graphs" target="_blank" rel="noopener">jm199504/Financial-Knowledge-Graphs</a>
+        <span class="tags"><span class="star">★ 3,133</span><span class="date">更新 2024-07-07</span><span class="kg yes">● 有 KG</span></span></header>
+      <p class="desc">中文教程式的"小型金融知识图谱"完整构建流程：数据采集 → 实体/关系定义 → Python 抽取 → Neo4j 入库 → Cypher 查询与可视化（图数据库 + 关系抽取 + 前端展示）。</p>
+      <p class="why"><b>对本选题</b>：<b>最适合"从零到一"的参考</b>：它把"一个金融 KG 到底要建哪些实体和关系"讲清楚了，可直接作为你的起点基线（并指出它的小规模、静态、无时序等局限 = 你的增量）。</p>
+    </article>
+
+    <article class="card" data-kg="yes" data-stars="2181">
+      <header><a class="name" href="https://github.com/lemonhu/stock-knowledge-graph" target="_blank" rel="noopener">lemonhu/stock-knowledge-graph</a>
+        <span class="tags"><span class="star">★ 2,181</span><span class="date">更新 2020-07-23</span><span class="kg yes">● 有 KG</span></span></header>
+      <p class="desc">利用网络公开数据构建的小型证券知识图谱 / 知识库（中文，含公司、行业、概念等实体的爬取与入库）。</p>
+      <p class="why"><b>对本选题</b>：早期中文证券 KG 的代表实现，可作为"前人做到哪一步"的对照（2020 年后停更，说明该方向长期缺少维护者 —— 这既是机会也提醒你控制范围）。</p>
+    </article>
+
+    <article class="card" data-kg="yes" data-stars="1291">
+      <header><a class="name" href="https://github.com/charlesXu86/Chatbot_CN" target="_blank" rel="noopener">charlesXu86/Chatbot_CN</a>
+        <span class="tags"><span class="star">★ 1,291</span><span class="date">更新 2021-06-13</span><span class="kg yes">● 有 KG</span></span></header>
+      <p class="desc">金融-司法领域的中文聊天机器人：信息抽取 + NLU + NLG + 知识图谱 + Django 前端，并把 NLP 与 KG 封装成 REST 接口。</p>
+      <p class="why"><b>对本选题</b>："KG 如何落成一个可演示系统"的完整老牌示例（架构可参考，技术栈已过时）。它的分层（抽取 / 服务 / 展示）值得仿用。</p>
+    </article>
+
+    <article class="card" data-kg="mix" data-stars="7381">
+      <header><a class="name" href="https://github.com/xerrors/Yuxi" target="_blank" rel="noopener">xerrors/Yuxi</a>
+        <span class="tags"><span class="star">★ 7,381</span><span class="date">更新 2026-10-10</span><span class="kg mix">◐ 混合</span></span></header>
+      <p class="desc">可私有部署的多租户"知识智能体平台"：统一 RAG、知识图谱、多智能体、MCP/Skills、沙箱与权限管理（中文文档完善）。</p>
+      <p class="why"><b>对本选题</b>：如果你想快速搭出一个"能演示 + 带权限 + 有图谱"的系统，这是现成的平台骨架；也适合做横向对比（平台化方案 vs 你的专用方案）。</p>
+    </article>
+
+  </div>
+
+  <h3 class="grp">金融 LLM / Agent / 量化研究（多为无 KG 的强对手）</h3>
+  <div class="cards">
+
+    <article class="card" data-kg="mix" data-stars="110954">
+      <header><a class="name" href="https://github.com/TauricResearch/TradingAgents" target="_blank" rel="noopener">TauricResearch/TradingAgents</a>
+        <span class="tags"><span class="star">★ 110,954</span><span class="date">更新 2026-10-03</span><span class="kg mix">◐ 混合</span></span></header>
+      <p class="desc">多智能体 LLM 交易框架：基本面 / 情绪 / 新闻 / 技术分析 Agent + 多空辩论 + 风险评审，模拟一个投研团队的决策流程（配套论文，社区规模在该方向最大）。</p>
+      <p class="why"><b>对本选题——最重要的对手：</b>它已经能吃新闻并做多角色推理，<b>但"记忆"只是角色对话历史</b>，公司/事件/供应链之间没有显式关系图，跨公司影响路径无法追溯。你要正面回答的是："<b>加了知识图谱，比这套多智能体辩论强在哪</b>"（建议以可解释性与多跳查询为主战场）。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="74181">
+      <header><a class="name" href="https://github.com/OpenBB-finance/OpenBB" target="_blank" rel="noopener">OpenBB</a>
+        <span class="tags"><span class="star">★ 74,181</span><span class="date">更新 2026-10-12</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">"面向分析师、量化与 AI Agent 的开放数据平台"：把行情、财报、宏观经济、新闻等多源数据统一成标准化对象与 Python 接口，并提供 Copilot 式自然语言研究（网站 openbb.co）。</p>
+      <p class="why"><b>对本选题</b>：<b>多源结构化数据的接入层现成答案</b>（省掉大量清洗工作）；也是"不做图谱也能做投研"的强对照——它的能力止于"取到对的数据"，不回答"关系与影响"。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="49339">
+      <header><a class="name" href="https://github.com/microsoft/qlib" target="_blank" rel="noopener">microsoft/qlib</a>
+        <span class="tags"><span class="star">★ 49,339</span><span class="date">更新 2026-10-08</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">AI 量化投研平台：数据管理、因子/模型库、预测、回测、组合优化与在线服务全流程，支持监督学习、市场动态建模与 RL。</p>
+      <p class="why"><b>对本选题</b>："传统量化"一侧的最强开源基座。<b>你的实验若要证明"非结构化情报 + 图谱"能带来超额价值，最终必须接进这类框架做严格回测</b>（否则说服力不足）。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="14918">
+      <header><a class="name" href="https://github.com/microsoft/RD-Agent" target="_blank" rel="noopener">microsoft/RD-Agent</a>
+        <span class="tags"><span class="star">★ 14,918</span><span class="date">更新 2026-10-11</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">用 LLM Agent 自动化"数据 + 模型"的研究开发闭环：假设生成 → 实现 → 回测 → 反思迭代（与 qlib 深度集成）。</p>
+      <p class="why"><b>对本选题</b>：对应"量化情报 → 策略"的自动化研究路线；可作为你系统的下游（把图谱产出的信号交给自动化研究循环验证）。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="21397">
+      <header><a class="name" href="https://github.com/AI4Finance-Foundation/FinGPT" target="_blank" rel="noopener">AI4Finance-Foundation/FinGPT</a>
+        <span class="tags"><span class="star">★ 21,397</span><span class="date">更新 2026-09-23</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">开源金融大模型与数据管道：金融语料清洗与标注、轻量微调（LoRA）、发布模型权重与"新闻 → 股价走势预测"等下游任务示例。</p>
+      <p class="why"><b>对本选题</b>：<b>金融 LLM 一侧的事实基线</b>。FinGPT-Forecaster 之类的工作说明"LLM 直接读新闻预测"已被探讨——你的论文实验必须说明"在图谱上做多跳推理"相对它的增量在哪。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="8205">
+      <header><a class="name" href="https://github.com/AI4Finance-Foundation/FinRobot" target="_blank" rel="noopener">AI4Finance-Foundation/FinRobot</a>
+        <span class="tags"><span class="star">★ 8,205</span><span class="date">更新 2026-09-28</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">金融 AI Agent 平台：一套"AI 分析师"流水线（市场预测、财报分析、估值、研报撰写），分四层架构（金融 AI 基础 / 算法 / 任务 Agent / 应用）。</p>
+      <p class="why"><b>对本选题</b>："多智能体做投研"的另一实现，可与 TradingAgents 对照；其分层架构适合作为你系统模块划分的参考。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="16635">
+      <header><a class="name" href="https://github.com/AI4Finance-Foundation/FinRL" target="_blank" rel="noopener">AI4Finance-Foundation/FinRL</a>
+        <span class="tags"><span class="star">★ 16,635</span><span class="date">更新 2026-10-12</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">金融强化学习框架：标准化的市场环境、基准算法与回测流水线。</p>
+      <p class="why"><b>对本选题</b>：如果你走"事件驱动策略"路线，这是把信号变成策略的学习框架（与 qlib 二选一即可）。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="12740">
+      <header><a class="name" href="https://github.com/OpenByteInc/QuantDinger" target="_blank" rel="noopener">OpenByteInc/QuantDinger</a>
+        <span class="tags"><span class="star">★ 12,740</span><span class="date">更新 2026-10-09</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">开源的"AI 交易操作系统"：Agent 交易与策略研究 → 回测 → 模拟/实盘，覆盖加密、股票与外汇，内置多租户 SaaS 能力（用户、计费、结算）。</p>
+      <p class="why"><b>对本选题</b>：2026 年"AI 交易"产品化最完整的一个开源实现；提醒你选题的单点价值必须清晰，否则会淹没在这类大而全的平台里。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="2292">
+      <header><a class="name" href="https://github.com/quantskills/quantskills" target="_blank" rel="noopener">quantskills/quantskills</a>
+        <span class="tags"><span class="star">★ 2,292</span><span class="date">更新 2026-10-13</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">面向 AI Agent 的开源量化能力全景导航：数据、因子研究、回测验证、风险监控到自动交易的 Skill 与 Agent 生态索引。</p>
+      <p class="why"><b>对本选题</b>：<b>调研工具</b>——一次性看清"量化 Agent 生态里已经有哪些现成零件"，避免重复造轮子，也方便你在报告里做"已有能力清单"。</p>
+    </article>
+
+  </div>
+
+  <h3 class="grp">数据源、回测引擎与标准（多非 GitHub）</h3>
+  <div class="cards">
+
+    <article class="card" data-kg="no" data-stars="22917">
+      <header><a class="name" href="https://github.com/akfamily/akshare" target="_blank" rel="noopener">akfamily/akshare</a>
+        <span class="tags"><span class="star">★ 22,917</span><span class="date">更新 2026-10-13</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">中文财经数据接口库：股票/基金/期货/债券/宏观经济/新闻公告等大量数据源的统一 Python 接口，社区活跃、更新频繁。</p>
+      <p class="why"><b>对本选题</b>：A 股方向的<b>数据源首选</b>（含公告与新闻类接口），能支撑"公告 → 事件 → 实体"的抽取流程。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="15447">
+      <header><a class="name" href="https://github.com/waditu/tushare" target="_blank" rel="noopener">waditu/tushare</a>
+        <span class="tags"><span class="star">★ 15,447</span><span class="date">更新 2024-03-13</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">老牌中文 A 股数据接口（行情、财报、公司基本信息等），社区版自 2024 年起不再更新，Pro 版需付费积分。</p>
+      <p class="why"><b>对本选题</b>：可作为 akshare 的补充；注意其停更状态，论文里若引用数据源需说明版本与可得性。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="21981">
+      <header><a class="name" href="https://github.com/QuantConnect/Lean" target="_blank" rel="noopener">QuantConnect/Lean</a>
+        <span class="tags"><span class="star">★ 21,981</span><span class="date">更新 2026-10-12</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">事件驱动的开源回测与实盘引擎（C# / Python），支持多资产多市场、滑点与手续费建模、数据切片按时间推进。</p>
+      <p class="why"><b>对本选题——工程上必须的：</b>题干明确要求"避免量化回测中的未来信息泄露"。Lean（或 qlib）的<b>按时间推进的数据切片机制</b>是 point-in-time 正确性的工程保障：你的知识图谱必须同样能被"按时间切片"（即某日只允许看到该日之前的事实），否则实验结果不可信。</p>
+    </article>
+
+    <article class="card" data-kg="yes" data-stars="0">
+      <header><a class="name" href="https://spec.edmcouncil.org/fibo/" target="_blank" rel="noopener">FIBO（Financial Industry Business Ontology）</a>
+        <span class="tags"><span class="nogh">非 GitHub · 不受门槛限制</span><span class="kg yes">● 有 KG</span></span></header>
+      <p class="desc">EDM Council 维护的金融行业业务本体标准：用形式化本体（OWL）定义法律主体、公司、金融工具、公司行为、市场与地域等概念及其关系，是金融 KG 的行业级术语与 schema 参考。</p>
+      <p class="why"><b>对本选题</b>：<b>你要"定义本体"——最省力且最专业的做法是裁剪复用 FIBO</b>（例如用它的 LegalEntity / Corporation / FinancialInstrument 作为公司实体类），并在报告里说明裁剪范围与理由。这比自创一套实体名更有说服力，也顺带解决了"实体消歧"的命名规范问题。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="0">
+      <header><a class="name" href="https://www.alpha-sense.com/" target="_blank" rel="noopener">AlphaSense</a>
+        <span class="tags"><span class="nogh">非 GitHub · 不受门槛限制</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">商业市场情报与搜索平台：覆盖财报、电话会记录、券商研报、公司文件与新闻网络，用领域化的检索与 AI 摘要服务于投研、尽调与竞争分析（金融机构付费产品）。</p>
+      <p class="why"><b>对本选题</b>："<b>非结构化情报 → 可检索证据</b>"的商业天花板。它的强项是"找得到 + 有出处"，而不是"关系推理"——正说明结构化的关系网络在专业投研里仍是未满足需求（也说明企业愿意为情报付费）。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="0">
+      <header><a class="name" href="https://arxiv.org/abs/2303.17564" target="_blank" rel="noopener">BloombergGPT（论文）</a>
+        <span class="tags"><span class="nogh">非 GitHub · 不受门槛限制</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">彭博训练的金融领域专用 LLM（500 亿参数，混合金融与通用语料），并在金融 NLP 基准上评测（2023）。</p>
+      <p class="why"><b>对本选题</b>：领域 LLM 的标杆工作，用于支撑"金融语言理解本身已被证明可行，剩下的瓶颈在<b>知识组织与推理</b>"这一论证。</p>
+    </article>
+
+    <article class="card" data-kg="no" data-stars="0">
+      <header><a class="name" href="https://www.sec.gov/edgar/search/" target="_blank" rel="noopener">SEC EDGAR / 巨潮资讯网</a>
+        <span class="tags"><span class="nogh">非 GitHub · 不受门槛限制</span><span class="kg no">○ 无 KG</span></span></header>
+      <p class="desc">美股与 A 股公告、财报的官方原始数据源：EDGAR 提供全文检索、结构化财务报表数据集与实时提交流；巨潮资讯网提供 A 股公告原文。</p>
+      <p class="why"><b>对本选题</b>：<b>时序正确性最可靠的事实来源</b>——公告的<b>提交时间戳</b>就是 point-in-time 回测的基准（严禁用"事后修订版"的财报做当日决策），这一点必须在报告的方法部分写清。</p>
+    </article>
+
+  </div>
+
+  <div class="gap">
+    <h4>竞品空白与选题建议</h4>
+    <ul>
+      <li class="done"><b>已被解决：</b>数据接入（OpenBB 74k★、AKShare、Tushare、EDGAR）、金融 LLM 与多智能体投研（FinGPT 21k★、FinRobot、TradingAgents 111k★）、量化研究自动化（qlib 49k★、RD-Agent）、通用 KG/知识增强框架（KAG 9k★、OpenSPG、Yuxi）、本体标准（FIBO）、回测正确性（Lean 22k★、qlib）。</li>
+      <li class="void"><b>空白 1：没有公开、可复现的"公司-产业-供应链-事件"一体化知识网络。</b>现有的中文金融 KG 项目多为 2020 年前后的教程级小图（lemonhu 2020 停更、Financial-Knowledge-Graphs 2024 停更），规模小、静态、无事件层。</li>
+      <li class="void"><b>空白 2：跨公司/跨行业的"影响路径"没有评测标准。</b>产业链传导、供应链风险、竞争对手连带影响——缺少标注数据与评价指标，这既是难点也是你论文创新的位置。</li>
+      <li class="void"><b>空白 3：point-in-time 与未来信息泄露。</b>LLM/Agent 类系统几乎都不做知识的时间切片，回测中"用到了未来才公布的信息"是普遍隐患。把"<b>可按时点切片的知识图谱</b>"做成系统特性，是一个漂亮且可验证的工程贡献。</li>
+      <li class="void"><b>空白 4：隐含关系（供应商/客户/产品重叠）抽取质量没有公开基准。</b>供应链知识图谱的数据集极度早期（SupplyGraph 仅 104★，见附录）。</li>
+      <li class="do"><b>建议：</b>① 把范围收窄到<b>一条细分产业链</b>（控制标注成本，例如某新能源/半导体细分环节的 30–80 家公司）；② 本体裁剪自 <b>FIBO</b> + 自建"供应/客户/产品重叠/事件"四类关系；③ 三个实验：<b>多跳关系问答</b>（KG vs GraphRAG vs 纯 RAG vs 纯 LLM）、<b>影响路径可解释性</b>（沿图给出带出处的推理链）、<b>point-in-time 事件研究回测</b>（对齐 Lean/qlib 的时间切片，并专门报告防泄露措施）；④ 明确报告"图谱在什么条件下有价值、在什么条件下不如 RAG"（题干要求分析适用条件与局限）。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================ 附录 -->
+<details class="appendix" id="appendix">
+  <summary>附录 · 低于 ★1,000 门槛但值得一读的学术 / 数据集项目（<b>未计入候选</b>）</summary>
+  <p style="font-size:13.4px;color:var(--muted)">按你的要求，以上候选均已通过 ★≥1,000 的 GitHub 门槛筛选。下列项目同样在 GitHub 上但未达门槛，故<b>不作为候选</b>列出，仅作为论文与方法论的引用线索，请知悉其成熟度较低。</p>
+  <ul>
+    <li><a href="https://github.com/pipiku915/FinMem-LLM-StockTrading" target="_blank" rel="noopener">pipiku915/FinMem-LLM-StockTrading</a>（★963，2024-08）— 分层记忆 + <b>记忆遗忘/衰减</b>机制的 LLM 交易 Agent。对选题 1/2/5 的"长期记忆更新与遗忘"最有参考价值的一篇论文代码。</li>
+    <li><a href="https://github.com/The-FinAI/PIXIU" target="_blank" rel="noopener">The-FinAI/PIXIU</a>（★893，2026-10）— 金融 LLM 的指令数据与评测基准集合；选题 5 做评测时可用其任务定义。</li>
+    <li><a href="https://github.com/yumoxu/stocknet-dataset" target="_blank" rel="noopener">yumoxu/stocknet-dataset</a>（★681，2019-03）— "推文 + 行情预测"的标准数据集；事件驱动研究的早期基准。</li>
+    <li><a href="https://github.com/xiaohui-victor-li/FinDKG" target="_blank" rel="noopener">xiaohui-victor-li/FinDKG</a>（★201，2024-07）— <b>动态知识图谱 + LLM</b> 用于全球金融趋势检测（论文代码）。"时序金融 KG"最直接的相关工作。</li>
+    <li><a href="https://github.com/ciol-researchlab/SupplyGraph" target="_blank" rel="noopener">ciol-researchlab/SupplyGraph</a>（★104）— 供应链规划的图数据集基准。<b>供应链图谱缺少公开数据</b>的证据。</li>
+    <li><a href="https://github.com/ishepard/pydriller" target="_blank" rel="noopener">ishepard/pydriller</a>（★972，2026-09）— 挖掘 Git 仓库的 Python 框架（提交、差异、开发者）；选题 3 做数据采集几乎必用，虽未达门槛但实用性极高。</li>
+    <li><a href="https://github.com/MaibornWolff/codecharta" target="_blank" rel="noopener">MaibornWolff/codecharta</a>（★547，2026-10）— 把代码度量与版本历史渲染成可交互的"代码地图"；选题 3 的可视化参考。</li>
+  </ul>
+</details>
+
+<footer class="end">
+  <p><b>调研方法：</b>① GitHub 官方 API（<code>search/repositories</code> + <code>repos/&lt;owner&gt;/&lt;repo&gt;</code>）在 2026-10-13 实取星标数、最近推送时间、许可证与简介，作为入选依据与数字来源；② 对非 GitHub 的项目/产品/标准，用网页检索与直接抓取官网核对描述（GDELT、Event Registry、AlphaSense、CodeScene 等为直接抓取的页面原文）；③ 知识图谱使用情况（● / ◐ / ○）由项目文档与仓库描述判定，属于人工判断，**若用于正式报告请以你在代码里的二次确认为准**。</p>
+  <p><b>门槛与计数：</b>GitHub 托管项目一律要求 ★≥1,000（快照日）；非 GitHub 的网站/产品/论文/标准不受门槛限制，已在卡片中明确标注"非 GitHub"。正文候选 <b>106 条</b>（其中 ★ 门槛内的 GitHub 项目 82 条，非 GitHub 网站/产品/标准 24 条），附录另列 7 条门槛以下的学术参考。</p>
+  <p><b>时效提醒：</b>本领域变化极快——例如 openrecall 已停更约一年、Rewind/Limitless 于 2025-12-19 关停、graphify / Understand-Anything / codegraph / DeepWiki 均为 2026 年新出现的项目。建议在期中汇报前重新跑一次星标与"最近推送时间"，并在报告中注明数据快照日期。</p>
+</footer>
+
+</div>
+
+<script>
+(function(){
+  var cards = Array.prototype.slice.call(document.querySelectorAll('article.card'));
+  var q = document.getElementById('q');
+  var chips = document.getElementById('kgchips');
+  var count = document.getElementById('count');
+  var mode = 'all';
+
+  cards.forEach(function(c,i){ c.dataset.idx = i; });
+
+  function apply(){
+    var term = (q.value || '').trim().toLowerCase();
+    var shown = 0;
+    cards.forEach(function(c){
+      var okKg = (mode === 'all') || (c.dataset.kg === mode);
+      var okQ = !term || c.textContent.toLowerCase().indexOf(term) >= 0;
+      var ok = okKg && okQ;
+      c.classList.toggle('hide', !ok);
+      if (ok) shown++;
+    });
+    // hide whole topics / group headings that have no visible card
+    document.querySelectorAll('section.topic').forEach(function(sec){
+      var visible = sec.querySelectorAll('article.card:not(.hide)').length;
+      sec.style.display = visible ? '' : 'none';
+    });
+    document.querySelectorAll('h3.grp').forEach(function(h){
+      var vis = false;
+      var n = h.nextElementSibling;
+      while (n && n.classList && n.classList.contains('cards')) {
+        if (n.querySelectorAll('article.card:not(.hide)').length) { vis = true; }
+        n = n.nextElementSibling;
+      }
+      h.style.display = vis ? '' : 'none';
+      var c = h.nextElementSibling;
+      while (c && c.classList && c.classList.contains('cards')) {
+        c.style.display = vis ? '' : 'none';
+        c = c.nextElementSibling;
+      }
+    });
+    count.textContent = shown + ' / ' + cards.length + ' 条';
+  }
+
+  chips.addEventListener('click', function(e){
+    var b = e.target.closest('button');
+    if (!b) return;
+    mode = b.dataset.kg;
+    Array.prototype.forEach.call(chips.querySelectorAll('button'), function(x){
+      x.setAttribute('aria-pressed', String(x === b));
+    });
+    apply();
+  });
+  q.addEventListener('input', apply);
+  apply();
+})();
+</script>
+</body>
+</html>
