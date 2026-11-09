@@ -389,8 +389,8 @@ footer .pg{font-variant-numeric:tabular-nums}
 <section class="slide">
   <div class="head">
     <div class="eyebrow">04 &nbsp;当前进展与阶段性结果 &nbsp;·&nbsp; 90 秒</div>
-    <h1 class="title">系统已跑通，对照实验数据待补</h1>
-    <p class="lead">已完成的每一项都能在仓库里复现；两组对照（公开基准与真实文件树）已跑通链路，结果留白待填。</p>
+    <h1 class="title">系统已跑通，Victoria 对照已出第一组</h1>
+    <p class="lead">已完成的每一项都能在仓库里复现；A 组（MultiHop-RAG）待补，B 组（Victoria 真实文件树）已出第一组结果。</p>
   </div>
 
   <div class="cards" style="grid-template-columns:repeat(4,1fr);gap:0 24px">
@@ -451,7 +451,7 @@ footer .pg{font-variant-numeric:tabular-nums}
 
     <div class="col">
       <div class="card" style="border-top-color:var(--ink)">
-        <h3>对照实验 B · Victoria_Subset（11 题）<span class="pending">待填</span></h3>
+        <h3>对照实验 B · Victoria_Subset（11 题）</h3>
       </div>
       <!-- 待填：answer eval report.md 的四维均分（interactive = RAG，deep = KG），0–2 分 -->
       <table class="ph">
@@ -459,20 +459,20 @@ footer .pg{font-variant-numeric:tabular-nums}
           <tr><th style="width:20%">条件</th><th style="width:20%">证据支撑</th><th style="width:20%">引用准确</th><th style="width:20%">完整性</th><th>正确性</th></tr>
         </thead>
         <tbody>
-          <tr><td><strong>RAG</strong></td><td class="todo">—</td><td class="todo">—</td><td class="todo">—</td><td class="todo">—</td></tr>
-          <tr><td><strong>KG</strong></td><td class="todo">—</td><td class="todo">—</td><td class="todo">—</td><td class="todo">—</td></tr>
+          <tr><td><strong>RAG</strong></td><td>1.36</td><td>1.55</td><td>1.36</td><td>1.00</td></tr>
+          <tr><td><strong>KG</strong></td><td>1.55</td><td>1.73</td><td>1.36</td><td>1.09</td></tr>
         </tbody>
         <tfoot>
-          <tr><td><strong>KG − RAG</strong></td><td class="todo">Δ —</td><td class="todo">Δ —</td><td class="todo">Δ —</td><td class="todo">Δ —</td></tr>
+          <tr><td><strong>KG − RAG</strong></td><td>+0.19</td><td>+0.18</td><td>0.00</td><td>+0.09</td></tr>
         </tfoot>
       </table>
     </div>
   </div>
 
-  <p class="cap" style="margin-top:12px">口径：A 的 plain 无检索、rag 为向量 + 关键字、kg 为五路（含图与社区），三条件逐题配对，p 取 exact McNemar；B 为 RAG（interactive）与 KG（deep），四维 0–2 均分，n = 11，只报差值。</p>
+  <p class="cap" style="margin-top:12px">口径：A 的 plain 无检索、rag 为向量 + 关键字、kg 为五路（含图与社区），逐题配对，p 取 exact McNemar；B 为 RAG（interactive）与 KG（deep），语料 88 文档 / 2,328 段，四维 0–2 均分，n = 11，只报差值。</p>
 
   <div class="note" style="margin-top:10px">
-    <span class="tag">读数</span>受控语料 F1 1.00 只证明管线；增量 100 文件首刷 2.79 s、无变更 0.47–0.58 s；两组对照的差异尚无数据。
+    <span class="tag">读数</span>受控语料 F1 1.00 只证明管线；B 组差值落在 95% CI 重叠区内，n = 11 只作方向参考。
   </div>
 
   <p class="demo-link"><a href="demo/index.html" target="_blank" rel="noopener">▶ 打开静态演示 · 固定快照，无需 API Key</a></p>
